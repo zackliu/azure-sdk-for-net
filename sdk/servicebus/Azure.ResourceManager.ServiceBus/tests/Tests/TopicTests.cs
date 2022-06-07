@@ -50,16 +50,15 @@ namespace Azure.ResourceManager.ServiceBus.Tests
             Assert.AreEqual(topic.Id.Name, topicName);
 
             //validate if created successfully
-            topic = await _topicCollection.GetIfExistsAsync(topicName);
-            Assert.NotNull(topic);
             Assert.IsTrue(await _topicCollection.ExistsAsync(topicName));
+            topic = await _topicCollection.GetAsync(topicName);
 
             //delete topic
             await topic.DeleteAsync(WaitUntil.Completed);
 
             //validate
-            topic = await _topicCollection.GetIfExistsAsync(topicName);
-            Assert.Null(topic);
+            var exception = Assert.ThrowsAsync<RequestFailedException>(async () => { await _topicCollection.GetAsync(topicName); });
+            Assert.AreEqual(404, exception.Status);
             Assert.IsFalse(await _topicCollection.ExistsAsync(topicName));
         }
 
@@ -180,7 +179,7 @@ namespace Azure.ResourceManager.ServiceBus.Tests
             Assert.NotNull(keys1.PrimaryConnectionString);
             Assert.NotNull(keys1.SecondaryConnectionString);
 
-            AccessKeys keys2 = await authorizationRule.RegenerateKeysAsync(new RegenerateAccessKeyOptions(KeyType.PrimaryKey));
+            AccessKeys keys2 = await authorizationRule.RegenerateKeysAsync(new RegenerateAccessKeyContent(KeyType.PrimaryKey));
 
             //the recordings are sanitized therefore cannot be compared
             if (Mode != RecordedTestMode.Playback)
@@ -189,7 +188,7 @@ namespace Azure.ResourceManager.ServiceBus.Tests
                 Assert.AreEqual(keys1.SecondaryKey, keys2.SecondaryKey);
             }
 
-            AccessKeys keys3 = await authorizationRule.RegenerateKeysAsync(new RegenerateAccessKeyOptions(KeyType.SecondaryKey));
+            AccessKeys keys3 = await authorizationRule.RegenerateKeysAsync(new RegenerateAccessKeyContent(KeyType.SecondaryKey));
             if (Mode != RecordedTestMode.Playback)
             {
                 Assert.AreEqual(keys2.PrimaryKey, keys3.PrimaryKey);

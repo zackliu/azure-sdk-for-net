@@ -13,7 +13,6 @@ using Azure.ResourceManager.Resources.Models;
 using Azure.ResourceManager.Network.Models;
 using Azure.ResourceManager.Network.Tests.Helpers;
 using NUnit.Framework;
-using SubResource = Azure.ResourceManager.Network.Models.SubResource;
 
 namespace Azure.ResourceManager.Network.Tests
 {
@@ -1993,12 +1992,12 @@ namespace Azure.ResourceManager.Network.Tests
             string deviceName = deviceNode.Attributes["name"].Value;
             string firmwareVersion = deviceNode.FirstChild.Attributes["name"].Value;
 
-            VpnDeviceScriptParameters scriptParams = new VpnDeviceScriptParameters()
-            {
-                DeviceFamily = deviceName,
-                FirmwareVersion = firmwareVersion,
-                Vendor = vendorName
-            };
+            //VpnDeviceConfigurationScriptContent scriptParams = new VpnDeviceConfigurationScriptContent()
+            //{
+            //    DeviceFamily = deviceName,
+            //    FirmwareVersion = firmwareVersion,
+            //    Vendor = vendorName
+            //};
 
             // TODO -- fix this. To get a VpnDeviceConfigurationScript, we need to find it on an instance of VirtualNetworkGatewayConnection
             //Response<string> vpnDeviceConfiguration =

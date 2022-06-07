@@ -39,6 +39,7 @@ namespace Azure.ResourceManager.Sql.Tests.Scenario
 
         [Test]
         [RecordedTest]
+        [Ignore("Re-record before GA")]
         public async Task ManagedInstanceOperationApiTests()
         {
             // Create Managed Instance
@@ -64,8 +65,7 @@ namespace Azure.ResourceManager.Sql.Tests.Scenario
             Assert.AreEqual(operationName.ToString(), getOperation.Value.Data.Name);
 
             // 4.GetIfExist
-            var GetIfExistoperation = await collection.GetIfExistsAsync(operationName);
-            Assert.AreEqual(operationName.ToString(), GetIfExistoperation.Value.Data.Name);
+            Assert.IsTrue(await collection.ExistsAsync(operationName));
         }
     }
 }

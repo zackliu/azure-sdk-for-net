@@ -18,6 +18,7 @@ namespace Azure.ResourceManager.ServiceBus.Tests
         public QueueTests(bool isAsync) : base(isAsync)
         {
         }
+
         [SetUp]
         public async Task CreateNamespaceAndGetQueueCollection()
         {
@@ -35,6 +36,7 @@ namespace Azure.ResourceManager.ServiceBus.Tests
             ServiceBusNamespaceResource serviceBusNamespace = (await namespaceCollection.CreateOrUpdateAsync(WaitUntil.Completed, namespaceName, parameters)).Value;
             _queueCollection = serviceBusNamespace.GetServiceBusQueues();
         }
+
         [Test]
         [RecordedTest]
         public async Task CreateDeleteQueue()
@@ -47,16 +49,15 @@ namespace Azure.ResourceManager.ServiceBus.Tests
             Assert.AreEqual(queue.Id.Name, queueName);
 
             //validate if created successfully
-            queue = await _queueCollection.GetIfExistsAsync(queueName);
-            Assert.NotNull(queue);
             Assert.IsTrue(await _queueCollection.ExistsAsync(queueName));
+            queue = await _queueCollection.GetAsync(queueName);
 
             //delete queue
             await queue.DeleteAsync(WaitUntil.Completed);
 
             //validate
-            queue = await _queueCollection.GetIfExistsAsync(queueName);
-            Assert.Null(queue);
+            var exception = Assert.ThrowsAsync<RequestFailedException>(async () => { await _queueCollection.GetAsync(queueName); });
+            Assert.AreEqual(404, exception.Status);
             Assert.IsFalse(await _queueCollection.ExistsAsync(queueName));
         }
 
@@ -180,7 +181,7 @@ namespace Azure.ResourceManager.ServiceBus.Tests
             Assert.NotNull(keys1.PrimaryConnectionString);
             Assert.NotNull(keys1.SecondaryConnectionString);
 
-            AccessKeys keys2 = await authorizationRule.RegenerateKeysAsync(new RegenerateAccessKeyOptions(KeyType.PrimaryKey));
+            AccessKeys keys2 = await authorizationRule.RegenerateKeysAsync(new RegenerateAccessKeyContent(KeyType.PrimaryKey));
 
             //the recordings are sanitized therefore cannot be compared
             if (Mode != RecordedTestMode.Playback)
@@ -189,7 +190,7 @@ namespace Azure.ResourceManager.ServiceBus.Tests
                 Assert.AreEqual(keys1.SecondaryKey, keys2.SecondaryKey);
             }
 
-            AccessKeys keys3 = await authorizationRule.RegenerateKeysAsync(new RegenerateAccessKeyOptions(KeyType.SecondaryKey));
+            AccessKeys keys3 = await authorizationRule.RegenerateKeysAsync(new RegenerateAccessKeyContent(KeyType.SecondaryKey));
             if (Mode != RecordedTestMode.Playback)
             {
                 Assert.AreEqual(keys2.PrimaryKey, keys3.PrimaryKey);

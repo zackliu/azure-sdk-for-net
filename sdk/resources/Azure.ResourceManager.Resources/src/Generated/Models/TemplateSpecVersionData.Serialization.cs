@@ -82,7 +82,7 @@ namespace Azure.ResourceManager.Resources
 
         internal static TemplateSpecVersionData DeserializeTemplateSpecVersionData(JsonElement element)
         {
-            string location = default;
+            AzureLocation location = default;
             Optional<IDictionary<string, string>> tags = default;
             ResourceIdentifier id = default;
             string name = default;
@@ -97,7 +97,7 @@ namespace Azure.ResourceManager.Resources
             {
                 if (property.NameEquals("location"))
                 {
-                    location = property.Value.GetString();
+                    location = new AzureLocation(property.Value.GetString());
                     continue;
                 }
                 if (property.NameEquals("tags"))
@@ -127,7 +127,7 @@ namespace Azure.ResourceManager.Resources
                 }
                 if (property.NameEquals("type"))
                 {
-                    type = property.Value.GetString();
+                    type = new ResourceType(property.Value.GetString());
                     continue;
                 }
                 if (property.NameEquals("systemData"))
