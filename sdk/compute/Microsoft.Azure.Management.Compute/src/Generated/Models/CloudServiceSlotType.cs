@@ -12,11 +12,11 @@ namespace Microsoft.Azure.Management.Compute.Models
 {
 
     /// <summary>
-    /// Defines values for SharingProfileGroupTypes.
+    /// Defines values for CloudServiceSlotType.
     /// </summary>
-    public static class SharingProfileGroupTypes
+    public static class CloudServiceSlotType
     {
-        public const string Subscriptions = "Subscriptions";
-        public const string AADTenants = "AADTenants";
+        public const string Production = "Production";
+        public const string Staging = "Staging";
     }
 }

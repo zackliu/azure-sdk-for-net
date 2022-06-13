@@ -10,30 +10,32 @@
 
 namespace Microsoft.Azure.Management.Compute.Models
 {
-    using Newtonsoft.Json;
     using System.Linq;
 
     /// <summary>
-    /// The cloud service role properties.
+    /// This is the OS disk image.
     /// </summary>
-    public partial class CloudServiceRoleProperties
+    public partial class SharedGalleryOSDiskImage : SharedGalleryDiskImage
     {
         /// <summary>
-        /// Initializes a new instance of the CloudServiceRoleProperties class.
+        /// Initializes a new instance of the SharedGalleryOSDiskImage class.
         /// </summary>
-        public CloudServiceRoleProperties()
+        public SharedGalleryOSDiskImage()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the CloudServiceRoleProperties class.
+        /// Initializes a new instance of the SharedGalleryOSDiskImage class.
         /// </summary>
-        /// <param name="uniqueId">Specifies the ID which uniquely identifies a
-        /// cloud service role.</param>
-        public CloudServiceRoleProperties(string uniqueId = default(string))
+        /// <param name="diskSizeGB">This property indicates the size of the
+        /// VHD to be created.</param>
+        /// <param name="hostCaching">The host caching of the disk. Valid
+        /// values are 'None', 'ReadOnly', and 'ReadWrite'. Possible values
+        /// include: 'None', 'ReadOnly', 'ReadWrite'</param>
+        public SharedGalleryOSDiskImage(int? diskSizeGB = default(int?), string hostCaching = default(string))
+            : base(diskSizeGB, hostCaching)
         {
-            UniqueId = uniqueId;
             CustomInit();
         }
 
@@ -41,13 +43,6 @@ namespace Microsoft.Azure.Management.Compute.Models
         /// An initialization method that performs custom operations like setting defaults
         /// </summary>
         partial void CustomInit();
-
-        /// <summary>
-        /// Gets specifies the ID which uniquely identifies a cloud service
-        /// role.
-        /// </summary>
-        [JsonProperty(PropertyName = "uniqueId")]
-        public string UniqueId { get; private set; }
 
     }
 }
