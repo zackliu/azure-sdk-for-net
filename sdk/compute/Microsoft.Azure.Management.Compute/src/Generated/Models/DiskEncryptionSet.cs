@@ -60,10 +60,7 @@ namespace Microsoft.Azure.Management.Compute.Models
         /// during auto-key rotation. If an error is present, then auto-key
         /// rotation will not be attempted until the error on this disk
         /// encryption set is fixed.</param>
-        /// <param name="federatedClientId">Multi-tenant application client id
-        /// to access key vault in a different tenant. Setting the value to
-        /// 'None' will clear the property.</param>
-        public DiskEncryptionSet(string location, string id = default(string), string name = default(string), string type = default(string), IDictionary<string, string> tags = default(IDictionary<string, string>), EncryptionSetIdentity identity = default(EncryptionSetIdentity), string encryptionType = default(string), KeyForDiskEncryptionSet activeKey = default(KeyForDiskEncryptionSet), IList<KeyForDiskEncryptionSet> previousKeys = default(IList<KeyForDiskEncryptionSet>), string provisioningState = default(string), bool? rotationToLatestKeyVersionEnabled = default(bool?), System.DateTime? lastKeyRotationTimestamp = default(System.DateTime?), ApiError autoKeyRotationError = default(ApiError), string federatedClientId = default(string))
+        public DiskEncryptionSet(string location, string id = default(string), string name = default(string), string type = default(string), IDictionary<string, string> tags = default(IDictionary<string, string>), EncryptionSetIdentity identity = default(EncryptionSetIdentity), string encryptionType = default(string), KeyForDiskEncryptionSet activeKey = default(KeyForDiskEncryptionSet), IList<KeyForDiskEncryptionSet> previousKeys = default(IList<KeyForDiskEncryptionSet>), string provisioningState = default(string), bool? rotationToLatestKeyVersionEnabled = default(bool?), System.DateTime? lastKeyRotationTimestamp = default(System.DateTime?), ApiError autoKeyRotationError = default(ApiError))
             : base(location, id, name, type, tags)
         {
             Identity = identity;
@@ -74,7 +71,6 @@ namespace Microsoft.Azure.Management.Compute.Models
             RotationToLatestKeyVersionEnabled = rotationToLatestKeyVersionEnabled;
             LastKeyRotationTimestamp = lastKeyRotationTimestamp;
             AutoKeyRotationError = autoKeyRotationError;
-            FederatedClientId = federatedClientId;
             CustomInit();
         }
 
@@ -139,14 +135,6 @@ namespace Microsoft.Azure.Management.Compute.Models
         /// </summary>
         [JsonProperty(PropertyName = "properties.autoKeyRotationError")]
         public ApiError AutoKeyRotationError { get; private set; }
-
-        /// <summary>
-        /// Gets or sets multi-tenant application client id to access key vault
-        /// in a different tenant. Setting the value to 'None' will clear the
-        /// property.
-        /// </summary>
-        [JsonProperty(PropertyName = "properties.federatedClientId")]
-        public string FederatedClientId { get; set; }
 
         /// <summary>
         /// Validate the object.
