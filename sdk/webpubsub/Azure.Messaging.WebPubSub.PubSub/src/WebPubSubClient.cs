@@ -143,16 +143,6 @@ namespace Azure.Messaging.WebPubSub.PubSub
         }
 
         /// <summary>
-        /// Event to be notified when the client is connected.
-        /// </summary>
-        public event Func<string, Task> Connected;
-
-        /// <summary>
-        /// Event to be notified when the client is disconnected.
-        /// </summary>
-        public event Func<string, Task> Disconnected;
-
-        /// <summary>
         /// Dispose and close the client.
         /// </summary>
         /// <returns></returns>
