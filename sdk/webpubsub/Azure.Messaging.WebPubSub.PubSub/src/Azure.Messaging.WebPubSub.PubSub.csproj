@@ -4,6 +4,7 @@
     <PackageId>Azure.Messaging.WebPubSub.PubSub</PackageId>
     <Description>Azure Resource Manager client SDK for Azure resource provider WebPubSub.PubSub</Description>
     <PackageTags>azure;management;arm;resource manager;webpubsub.pubsub</PackageTags>
+    <NoWarn>$(NoWarn);0067</NoWarn>
     <IncludeOperationsSharedSource>true</IncludeOperationsSharedSource>
   </PropertyGroup>
   <ItemGroup>

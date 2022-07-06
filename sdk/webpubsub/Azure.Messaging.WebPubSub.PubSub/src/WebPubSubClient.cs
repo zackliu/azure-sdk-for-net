@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Messaging.WebPubSub.PubSub.Models;
+using Azure.Messaging.WebPubSub.PubSub.Protocols;
 
 namespace Azure.Messaging.WebPubSub.PubSub
 {
@@ -141,6 +142,21 @@ namespace Azure.Messaging.WebPubSub.PubSub
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// An event triggered when the connection is connected
+        /// </summary>
+        public event Func<ConnectedMessage, Task> OnConnected;
+
+        /// <summary>
+        /// An event triggered when the connection is disconnected
+        /// </summary>
+        public event Func<DisconnectedMessage, Task> OnDisconnected;
+
+        /// <summary>
+        /// An event triggered when the connection is suspended
+        /// </summary>
+        public event Func<DisconnectedMessage, Task> OnSuspended;
 
         /// <summary>
         /// Dispose and close the client.
