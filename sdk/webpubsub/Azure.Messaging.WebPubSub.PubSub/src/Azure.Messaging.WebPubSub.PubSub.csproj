@@ -1,20 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>Azure SDK client library for the WebPubSub service pubsub client</Description>
-    <AssemblyTitle>Azure SDK for WebPubSub PubSub Client</AssemblyTitle>
     <Version>1.0.0-beta.1</Version>
-    <!--The ApiCompatVersion is managed automatically and should not generally be modified manually.-->
-    <ApiCompatVersion>1.0.0</ApiCompatVersion>
-    <PackageTags>Azure, WebPubSub, SignalR</PackageTags>
-    <TargetFrameworks>$(RequiredTargetFrameworks)</TargetFrameworks>
-    <NoWarn>$(NoWarn);419</NoWarn>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DefineConstants>$(DefineConstants);EXPERIMENTAL</DefineConstants>
+    <PackageId>Azure.Messaging.WebPubSub.PubSub</PackageId>
+    <Description>Azure Resource Manager client SDK for Azure resource provider WebPubSub.PubSub</Description>
+    <PackageTags>azure;management;arm;resource manager;webpubsub.pubsub</PackageTags>
     <IncludeOperationsSharedSource>true</IncludeOperationsSharedSource>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Azure.Core" />
-    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Azure.Core"/>
   </ItemGroup>
 </Project>
