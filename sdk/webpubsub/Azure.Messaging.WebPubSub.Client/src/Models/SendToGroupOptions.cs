@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Azure.Messaging.WebPubSub.PubSub.Models
+namespace Azure.Messaging.WebPubSub.Client.Models
 {
     /// <summary>
     /// A set of options when sending data to group.

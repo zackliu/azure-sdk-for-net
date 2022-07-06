@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Azure.Messaging.WebPubSub.PubSub.Protocols
+namespace Azure.Messaging.WebPubSub.Client.Protocols
 {
     /// <summary>
     /// The message representing leaving group.

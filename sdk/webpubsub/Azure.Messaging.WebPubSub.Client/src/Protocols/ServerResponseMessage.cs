@@ -5,20 +5,15 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
-using Azure.Messaging.WebPubSub.PubSub.Models;
+using Azure.Messaging.WebPubSub.Client.Models;
 
-namespace Azure.Messaging.WebPubSub.PubSub.Protocols
+namespace Azure.Messaging.WebPubSub.Client.Protocols
 {
     /// <summary>
-    /// The message representing the response from groups.
+    /// The message representing the response from server.
     /// </summary>
-    public class GroupResponseMessage : WebPubSubMessage
+    public class ServerResponseMessage : WebPubSubMessage
     {
-        /// <summary>
-        /// The group name
-        /// </summary>
-        public string Group { get; }
-
         /// <summary>
         /// Type of the data
         /// </summary>
@@ -35,15 +30,13 @@ namespace Azure.Messaging.WebPubSub.PubSub.Protocols
         public ulong? SequenceId { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupResponseMessage"/> class.
+        /// Initializes a new instance of the <see cref="ServerResponseMessage"/> class.
         /// </summary>
-        /// <param name="group">The group name</param>
         /// <param name="dataType">Type of the data</param>
         /// <param name="data">The data content</param>
         /// <param name="sequenceId">The sequence id. Only availble in reliable protocol.</param>
-        protected GroupResponseMessage(string group, DataType dataType, ReadOnlySequence<byte> data, ulong? sequenceId)
+        protected ServerResponseMessage(DataType dataType, ReadOnlySequence<byte> data, ulong? sequenceId)
         {
-            Group = group;
             DataType = dataType;
             Data = data;
             SequenceId = sequenceId;

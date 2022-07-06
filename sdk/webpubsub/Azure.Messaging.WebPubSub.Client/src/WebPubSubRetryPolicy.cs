@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 
-namespace Azure.Messaging.WebPubSub.PubSub
+namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
     ///   An abstract representation of a policy to govern retrying.

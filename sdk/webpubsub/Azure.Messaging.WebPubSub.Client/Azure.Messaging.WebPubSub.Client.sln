@@ -1,19 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30309.148
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{36053250-2C87-40BA-B2D1-69238A3760E4}") = "Azure.Messaging.WebPubSub.PubSub", "src\Azure.Messaging.WebPubSub.PubSub.csproj", "{845299CD-399C-4296-9F61-D4E02679363E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.Messaging.WebPubSub.Client", "src\Azure.Messaging.WebPubSub.Client.csproj", "{845299CD-399C-4296-9F61-D4E02679363E}"
 EndProject
-Project("{36053250-2C87-40BA-B2D1-69238A3760E4}") = "Azure.Messaging.WebPubSub.PubSub.Tests", "tests\Azure.Messaging.WebPubSub.PubSub.Tests.csproj", "{0B6AAD06-F541-4931-A661-16BE3BE24EEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.Messaging.WebPubSub.Client.Tests", "tests\Azure.Messaging.WebPubSub.Client.Tests.csproj", "{0B6AAD06-F541-4931-A661-16BE3BE24EEF}"
 EndProject
 Global
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {72FA37A6-5914-405F-9A01-605ED24270D3}
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
@@ -47,5 +41,11 @@ Global
 		{0B6AAD06-F541-4931-A661-16BE3BE24EEF}.Release|x64.Build.0 = Release|Any CPU
 		{0B6AAD06-F541-4931-A661-16BE3BE24EEF}.Release|x86.ActiveCfg = Release|Any CPU
 		{0B6AAD06-F541-4931-A661-16BE3BE24EEF}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {72FA37A6-5914-405F-9A01-605ED24270D3}
 	EndGlobalSection
 EndGlobal

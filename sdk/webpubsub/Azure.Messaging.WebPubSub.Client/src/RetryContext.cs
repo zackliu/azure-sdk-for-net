@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Azure.Messaging.WebPubSub.PubSub
+namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
     /// The context passed to <see cref="WebPubSubRetryPolicy.NextRetryDelay(RetryContext)"/> to help the policy determine

@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Azure.Messaging.WebPubSub.PubSub.Protocols;
+using Azure.Messaging.WebPubSub.Client.Protocols;
 
-namespace Azure.Messaging.WebPubSub.PubSub.Models
+namespace Azure.Messaging.WebPubSub.Client.Models
 {
     /// <summary>
     /// The set of options that can be specified when creating <see cref="WebPubSubClient"/> instance.

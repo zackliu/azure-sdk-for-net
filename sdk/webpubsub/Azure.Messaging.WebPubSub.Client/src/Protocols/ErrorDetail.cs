@@ -5,9 +5,9 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
-using Azure.Messaging.WebPubSub.PubSub.Models;
+using Azure.Messaging.WebPubSub.Client.Models;
 
-namespace Azure.Messaging.WebPubSub.PubSub.Protocols
+namespace Azure.Messaging.WebPubSub.Client.Protocols
 {
     /// <summary>
     /// The message error detail.

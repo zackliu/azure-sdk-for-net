@@ -8,10 +8,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
-using Azure.Messaging.WebPubSub.PubSub.Models;
-using Azure.Messaging.WebPubSub.PubSub.Protocols;
+using Azure.Messaging.WebPubSub.Client.Models;
+using Azure.Messaging.WebPubSub.Client.Protocols;
 
-namespace Azure.Messaging.WebPubSub.PubSub
+namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
     /// The WebPubSubService PubSub client.
