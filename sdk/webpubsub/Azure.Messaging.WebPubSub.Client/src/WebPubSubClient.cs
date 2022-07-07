@@ -72,8 +72,8 @@ namespace Azure.Messaging.WebPubSub.Client
         /// </summary>
         /// <param name="groupName">The group name.</param>
         /// <param name="token">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
-        /// <returns></returns>
-        public virtual Task JoinGroupAsync(string groupName, CancellationToken token = default)
+        /// <returns>The ack for the operation.</returns>
+        public virtual Task<AckMessage> JoinGroupAsync(string groupName, CancellationToken token = default)
         {
             throw new NotImplementedException();
         }
@@ -83,8 +83,8 @@ namespace Azure.Messaging.WebPubSub.Client
         /// </summary>
         /// <param name="groupName">The group name.</param>
         /// <param name="token">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
-        /// <returns></returns>
-        public virtual Task LeaveGroupAsync(string groupName, CancellationToken token = default)
+        /// <returns>The ack for the operation</returns>
+        public virtual Task<AckMessage> LeaveGroupAsync(string groupName, CancellationToken token = default)
         {
             throw new NotImplementedException();
         }
@@ -112,8 +112,8 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <param name="operations">A set of options used while sending to group.</param>
         /// <param name="ackId">The ack-id for the operation. The message with the same ack-id is treated as the same message. Leave it omitted to generate by library.</param>
         /// <param name="token">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
-        /// <returns></returns>
-        public virtual Task SendToGroupWithAckAsync(string groupName, RequestContent content, DataType dataType, SendToGroupOptions operations = null, ulong? ackId = null, CancellationToken token = default)
+        /// <returns>The ack for the operation</returns>
+        public virtual Task<AckMessage> SendToGroupWithAckAsync(string groupName, RequestContent content, DataType dataType, SendToGroupOptions operations = null, ulong? ackId = null, CancellationToken token = default)
         {
             throw new NotImplementedException();
         }
@@ -137,8 +137,8 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <param name="dataType">The data type.</param>
         /// <param name="ackId">The ack-id for the operation. The message with the same ack-id is treated as the same message. Leave it omitted to generate by library.</param>
         /// <param name="token">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
-        /// <returns></returns>
-        public virtual Task SendEventWithAckAsync(RequestContent content, DataType dataType, ulong? ackId = null, CancellationToken token = default)
+        /// <returns>The ack for the operation</returns>
+        public virtual Task<AckMessage> SendEventWithAckAsync(RequestContent content, DataType dataType, ulong? ackId = null, CancellationToken token = default)
         {
             throw new NotImplementedException();
         }
