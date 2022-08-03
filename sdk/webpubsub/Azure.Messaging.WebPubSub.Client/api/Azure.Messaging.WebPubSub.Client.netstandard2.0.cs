@@ -12,12 +12,13 @@ namespace Azure.Messaging.WebPubSub.Client
         protected WebPubSubClient() { }
         public WebPubSubClient(System.Func<System.Uri> uriProvider, Azure.Messaging.WebPubSub.Client.Models.WebPubSubClientOptions clientOptions) { }
         public WebPubSubClient(System.Uri uri) { }
+        public System.Func<Azure.Messaging.WebPubSub.Client.Protocols.ServerResponseMessage, System.Threading.Tasks.Task> OnServerMessage { get { throw null; } set { } }
         public event System.Func<Azure.Messaging.WebPubSub.Client.Protocols.ConnectedMessage, System.Threading.Tasks.Task> OnConnected { add { } remove { } }
         public event System.Func<Azure.Messaging.WebPubSub.Client.Protocols.DisconnectedMessage, System.Threading.Tasks.Task> OnDisconnected { add { } remove { } }
         public event System.Func<Azure.Messaging.WebPubSub.Client.Protocols.DisconnectedMessage, System.Threading.Tasks.Task> OnSuspended { add { } remove { } }
         public virtual System.Threading.Tasks.Task ConnectAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public virtual System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
-        public virtual System.Threading.Tasks.Task<Azure.Messaging.WebPubSub.Client.Protocols.AckMessage> JoinGroupAsync(string groupName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public virtual System.Threading.Tasks.Task<Azure.Messaging.WebPubSub.Client.Protocols.AckMessage> JoinGroupAsync(string groupName, System.Func<Azure.Messaging.WebPubSub.Client.Protocols.GroupResponseMessage, System.Threading.Tasks.Task> handler, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public virtual System.Threading.Tasks.Task<Azure.Messaging.WebPubSub.Client.Protocols.AckMessage> LeaveGroupAsync(string groupName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public virtual System.Threading.Tasks.Task SendEventAsync(Azure.Core.RequestContent content, Azure.Messaging.WebPubSub.Client.Models.DataType dataType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public virtual System.Threading.Tasks.Task<Azure.Messaging.WebPubSub.Client.Protocols.AckMessage> SendEventWithAckAsync(Azure.Core.RequestContent content, Azure.Messaging.WebPubSub.Client.Models.DataType dataType, ulong? ackId = default(ulong?), System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }

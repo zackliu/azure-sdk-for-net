@@ -71,9 +71,10 @@ namespace Azure.Messaging.WebPubSub.Client
         /// Join the target group.
         /// </summary>
         /// <param name="groupName">The group name.</param>
+        /// <param name="handler">The handler function to handle group message.</param>
         /// <param name="cancellationToken">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
         /// <returns>The ack for the operation.</returns>
-        public virtual Task<AckMessage> JoinGroupAsync(string groupName, CancellationToken cancellationToken = default)
+        public virtual Task<AckMessage> JoinGroupAsync(string groupName, Func<GroupResponseMessage, Task> handler, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -157,6 +158,11 @@ namespace Azure.Messaging.WebPubSub.Client
         /// An event triggered when the connection is suspended
         /// </summary>
         public event Func<DisconnectedMessage, Task> OnSuspended;
+
+        /// <summary>
+        /// A handler to handle server messages.
+        /// </summary>
+        public Func<ServerResponseMessage, Task> OnServerMessage { get; set; }
 
         /// <summary>
         /// Dispose and close the client.
