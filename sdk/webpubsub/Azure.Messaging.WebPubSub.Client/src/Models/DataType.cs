@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Azure.Messaging.WebPubSub.Client.Models
+namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
     /// Represent the type of the data.
@@ -27,11 +27,16 @@ namespace Azure.Messaging.WebPubSub.Client.Models
         /// </summary>
         public static readonly DataType Binary = new DataType("binary");
 
-        private readonly string _name;
+        /// <summary>
+        /// protobuf type.
+        /// </summary>
+        public static readonly DataType Protobuf = new DataType("protobuf");
+
+        public string Name { get; }
 
         private DataType(string name)
         {
-            _name = name;
+            Name = name;
         }
     }
 }

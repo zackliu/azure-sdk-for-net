@@ -6,7 +6,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Azure.Messaging.WebPubSub.Client.Protocols
+namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
     /// Base class representing WebPubSub messages.

@@ -5,9 +5,8 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
-using Azure.Messaging.WebPubSub.Client.Models;
 
-namespace Azure.Messaging.WebPubSub.Client.Protocols
+namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
     /// The message representing sending event.
@@ -27,7 +26,7 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
         /// <summary>
         /// The data content
         /// </summary>
-        public ReadOnlySequence<byte> Data { get; }
+        public BinaryData Data { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SendEventMessage"/> class.
@@ -35,7 +34,7 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
         /// <param name="data">The data content</param>
         /// <param name="dataType">Type of the data</param>
         /// <param name="ackId">The optional ack-id</param>
-        public SendEventMessage(ReadOnlySequence<byte> data, DataType dataType, ulong? ackId)
+        public SendEventMessage(BinaryData data, DataType dataType, ulong? ackId)
         {
             AckId = ackId;
             DataType = dataType;

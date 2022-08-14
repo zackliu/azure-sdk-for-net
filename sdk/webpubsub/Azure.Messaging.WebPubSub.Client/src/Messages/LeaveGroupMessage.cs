@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Azure.Messaging.WebPubSub.Client.Protocols
+namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
-    /// The message representing joining group.
+    /// The message representing leaving group.
     /// </summary>
-    public class JoinGroupMessage : WebPubSubMessage
+    public class LeaveGroupMessage : WebPubSubMessage
     {
         /// <summary>
         /// The group name.
@@ -23,11 +23,11 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
         public ulong? AckId { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JoinGroupMessage"/> class.
+        /// Initializes a new instance of the <see cref="LeaveGroupMessage"/> class.
         /// </summary>
         /// <param name="group">The group name.</param>
         /// <param name="ackId">The optional ack-id</param>
-        public JoinGroupMessage(string group, ulong? ackId)
+        public LeaveGroupMessage(string group, ulong? ackId)
         {
             Group = group;
             AckId = ackId;

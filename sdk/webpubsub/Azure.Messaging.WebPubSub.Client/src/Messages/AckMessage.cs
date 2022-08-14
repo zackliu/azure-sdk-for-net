@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using Azure.Messaging.WebPubSub.Client.Models;
 
-namespace Azure.Messaging.WebPubSub.Client.Protocols
+namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
     /// The message representing Ack.

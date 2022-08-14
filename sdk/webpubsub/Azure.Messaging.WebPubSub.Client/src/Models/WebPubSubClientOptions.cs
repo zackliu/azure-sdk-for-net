@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using Azure.Messaging.WebPubSub.Client.Protocols;
 
-namespace Azure.Messaging.WebPubSub.Client.Models
+namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
     /// The set of options that can be specified when creating <see cref="WebPubSubClient"/> instance.
@@ -24,6 +24,8 @@ namespace Azure.Messaging.WebPubSub.Client.Models
         /// the library will use this policy to try recovering the connection.
         /// </summary>
         public WebPubSubRetryPolicy RecoveryPolicy { get; set; }
+
+        public WebPubSubRetryPolicy MessageRetryPolicy { get; set; }
 
         /// <summary>
         /// Get or set the protocol to use.

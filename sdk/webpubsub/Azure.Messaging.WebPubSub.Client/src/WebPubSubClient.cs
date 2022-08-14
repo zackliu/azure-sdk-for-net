@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
-using Azure.Messaging.WebPubSub.Client.Models;
 using Azure.Messaging.WebPubSub.Client.Protocols;
 
 namespace Azure.Messaging.WebPubSub.Client
@@ -19,22 +18,22 @@ namespace Azure.Messaging.WebPubSub.Client
     [SuppressMessage("Usage", "AZC0007:DO provide a minimal constructor that takes only the parameters required to connect to the service.", Justification = "WebPubSub clients are Websocket based and don't use ClientOptions functionality")]
     [SuppressMessage("Usage", "AZC0004:DO provide both asynchronous and synchronous variants for all service methods.", Justification = "Synchronous methods doesn't make sense in the scenario of WebPubSub client")]
     [SuppressMessage("Usage", "AZC0015:Unexpected client method return type.", Justification = "WebPubSubClient is a pure data plane client that don't need to return type as a management client does.")]
-    public class WebPubSubClient : IAsyncDisposable
+    public class WebPubSubClient : IDisposable
     {
         /// <summary>
         /// Initializes a PubSub client.
         /// </summary>
-        /// <param name="uri">The uri to connect to the service.</param>
-        public WebPubSubClient(Uri uri): this(() => uri, null)
+        /// <param name="clientAccessUri">The uri to connect to the service.</param>
+        public WebPubSubClient(Uri clientAccessUri) : this(new WebPubSubClientCredential(clientAccessUri), null)
         {
         }
 
         /// <summary>
         /// Initializes a PubSub client.
         /// </summary>
-        /// <param name="uriProvider">A uri provider that will be called to return the uri for each connecting or reconnecting.</param>
-        /// <param name="clientOptions">A option for the client.</param>
-        public WebPubSubClient(Func<Uri> uriProvider, WebPubSubClientOptions clientOptions)
+        /// <param name="credential">A uri provider that will be called to return the uri for each connecting or reconnecting.</param>
+        /// <param name="options">A option for the client.</param>
+        public WebPubSubClient(WebPubSubClientCredential credential, WebPubSubClientOptions options)
         {
             throw new NotImplementedException();
         }
@@ -70,11 +69,11 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <summary>
         /// Join the target group.
         /// </summary>
-        /// <param name="groupName">The group name.</param>
+        /// <param name="group">The group name.</param>
         /// <param name="handler">The handler function to handle group message.</param>
         /// <param name="cancellationToken">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
         /// <returns>The ack for the operation.</returns>
-        public virtual Task<AckMessage> JoinGroupAsync(string groupName, Func<GroupResponseMessage, Task> handler, CancellationToken cancellationToken = default)
+        public virtual Task<AckMessage> JoinGroupAsync(string group, Func<GroupResponseMessage, Task> handler, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -82,10 +81,10 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <summary>
         /// Leave the target group.
         /// </summary>
-        /// <param name="groupName">The group name.</param>
+        /// <param name="group">The group name.</param>
         /// <param name="cancellationToken">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
         /// <returns>The ack for the operation</returns>
-        public virtual Task<AckMessage> LeaveGroupAsync(string groupName, CancellationToken cancellationToken = default)
+        public virtual Task<AckMessage> LeaveGroupAsync(string group, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -93,13 +92,13 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <summary>
         /// Publish data to group with fire-and-forget.
         /// </summary>
-        /// <param name="groupName">The group name.</param>
+        /// <param name="group">The group name.</param>
         /// <param name="content">The data content.</param>
         /// <param name="dataType">The data type.</param>
         /// <param name="operations">A set of options used while sending to group.</param>
         /// <param name="cancellationToken">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
         /// <returns></returns>
-        public virtual Task SendToGroupAsync(string groupName, RequestContent content, DataType dataType, SendToGroupOptions operations = null, CancellationToken cancellationToken = default)
+        public virtual Task SendToGroupAsync(string group, RequestContent content, DataType dataType, SendToGroupOptions operations = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -107,14 +106,14 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <summary>
         /// Publish data to group and wait for the ack.
         /// </summary>
-        /// <param name="groupName">The group name.</param>
+        /// <param name="group">The group name.</param>
         /// <param name="content">The data content.</param>
         /// <param name="dataType">The data type.</param>
         /// <param name="operations">A set of options used while sending to group.</param>
         /// <param name="ackId">The ack-id for the operation. The message with the same ack-id is treated as the same message. Leave it omitted to generate by library.</param>
         /// <param name="cancellationToken">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
         /// <returns>The ack for the operation</returns>
-        public virtual Task<AckMessage> SendToGroupWithAckAsync(string groupName, RequestContent content, DataType dataType, SendToGroupOptions operations = null, ulong? ackId = null, CancellationToken cancellationToken = default)
+        public virtual Task<AckMessage> SendToGroupWithAckAsync(string group, RequestContent content, DataType dataType, SendToGroupOptions operations = null, ulong? ackId = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -126,7 +125,7 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <param name="dataType">The data type.</param>
         /// <param name="cancellationToken">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
         /// <returns></returns>
-        public virtual Task SendEventAsync(RequestContent content, DataType dataType, CancellationToken cancellationToken = default)
+        public virtual Task SendToServerAsync(RequestContent content, DataType dataType, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -139,7 +138,7 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <param name="ackId">The ack-id for the operation. The message with the same ack-id is treated as the same message. Leave it omitted to generate by library.</param>
         /// <param name="cancellationToken">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
         /// <returns>The ack for the operation</returns>
-        public virtual Task<AckMessage> SendEventWithAckAsync(RequestContent content, DataType dataType, ulong? ackId = null, CancellationToken cancellationToken = default)
+        public virtual Task<AckMessage> SendToServerWithAckAsync(RequestContent content, DataType dataType, ulong? ackId = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -147,28 +146,28 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <summary>
         /// An event triggered when the connection is connected
         /// </summary>
-        public event Func<ConnectedMessage, Task> OnConnected;
+        public event SyncAsyncEventHandler<ConnectedEventArgs> Connected;
 
         /// <summary>
         /// An event triggered when the connection is disconnected
         /// </summary>
-        public event Func<DisconnectedMessage, Task> OnDisconnected;
+        public event SyncAsyncEventHandler<DisconnectedEventArgs> Disconnected;
 
         /// <summary>
         /// An event triggered when the connection is suspended
         /// </summary>
-        public event Func<DisconnectedMessage, Task> OnSuspended;
+        public event SyncAsyncEventHandler<DisconnectedEventArgs> Suspended;
 
         /// <summary>
-        /// A handler to handle server messages.
+        /// A event triggered when received messages from server.
         /// </summary>
-        public Func<ServerResponseMessage, Task> OnServerMessage { get; set; }
+        public event SyncAsyncEventHandler<ServerMessageEventArgs> ServerMessageReceived;
 
         /// <summary>
         /// Dispose and close the client.
         /// </summary>
         /// <returns></returns>
-        public virtual ValueTask DisposeAsync()
+        public virtual ValueTask Dispose()
         {
             GC.SuppressFinalize(this);
             return default;

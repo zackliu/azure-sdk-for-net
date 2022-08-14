@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
-using Azure.Messaging.WebPubSub.Client.Models;
 
 namespace Azure.Messaging.WebPubSub.Client.Protocols
 {
@@ -15,7 +14,7 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
     public interface IWebPubSubProtocol
     {
         /// <summary>
-        /// Gets the name of the protocol. The name is used by SignalR to resolve the protocol between the client and server.
+        /// Gets the name of the protocol. The name is used by Web PubSub client to resolve the protocol between the client and server.
         /// </summary>
         string Name { get; }
 
