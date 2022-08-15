@@ -60,13 +60,14 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
             throw new NotImplementedException();
         }
 
-        public bool TryParseMessage(ref ReadOnlySequence<byte> input, out WebPubSubMessage webPubSubMessage)
+        public virtual WebPubSubMessage ParseMessage(ReadOnlySequence<byte> input)
         {
             try
             {
                 string type = null;
-                string groupName = null;
-                string eventName = null;
+                DownstreamEventType eventType = DownstreamEventType.Ack;
+                string group = null;
+                string @event = null;
                 SystemEventType systemEventType = SystemEventType.Connected;
                 ulong? ackId = null;
                 ulong? sequenceId = null;
@@ -74,7 +75,6 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                 string from = null;
                 FromType fromType = FromType.Server;
                 ErrorDetail errorDetail = null;
-                DownstreamEventType eventType = DownstreamEventType.Ack;
                 DataType dataType = null;
                 string userId = null;
                 string connectionId = null;
@@ -114,14 +114,14 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                             }
                             else if (reader.ValueTextEquals(GroupPropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                groupName = reader.ReadAsString(GroupPropertyName);
+                                group = reader.ReadAsString(GroupPropertyName);
                             }
                             else if (reader.ValueTextEquals(EventPropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                eventName = reader.ReadAsString(EventPropertyName);
-                                if (!Enum.TryParse(eventName, true, out systemEventType))
+                                @event = reader.ReadAsString(EventPropertyName);
+                                if (!Enum.TryParse(@event, true, out systemEventType))
                                 {
-                                    throw new InvalidDataException($"Unknown '{EventPropertyName}': {eventName}.");
+                                    throw new InvalidDataException($"Unknown '{EventPropertyName}': {@event}.");
                                 }
                             }
                             else if (reader.ValueTextEquals(DataTypePropertyNameBytes.EncodedUtf8Bytes))
@@ -274,8 +274,7 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                     case DownstreamEventType.Ack:
                         AssertNotNull(ackId, AckIdPropertyName);
                         AssertNotNull(success, SuccessPropertyName);
-                        webPubSubMessage = new AckMessage(ackId.Value, success.Value, errorDetail);
-                        return true;
+                        return new AckMessage(ackId.Value, success.Value, errorDetail);
 
                     case DownstreamEventType.Message:
                         AssertNotNull(from, FromPropertyName);
@@ -284,28 +283,26 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                         switch (fromType)
                         {
                             case FromType.Server:
-                                webPubSubMessage = new ServerResponseMessage(dataType, data, sequenceId);
-                                return true;
+                                return new ServerResponseMessage(dataType, data, sequenceId);
                             case FromType.Group:
-                                AssertNotNull(groupName, GroupPropertyName);
-                                webPubSubMessage = new GroupResponseMessage(groupName, dataType, data, sequenceId, fromUserId);
-                                return true;
+                                AssertNotNull(group, GroupPropertyName);
+                                return new GroupResponseMessage(group, dataType, data, sequenceId, fromUserId);
+                            default:
+                                throw new InvalidDataException($"Unsupported from {fromType}");
                         }
-                        break;
 
                     case DownstreamEventType.System:
-                        AssertNotNull(eventName, EventPropertyName);
+                        AssertNotNull(@event, EventPropertyName);
 
                         switch (systemEventType)
                         {
                             case SystemEventType.Connected:
-                                webPubSubMessage = new ConnectedMessage(userId, connectionId, reconnectionToken);
-                                return true;
+                                return new ConnectedMessage(userId, connectionId, reconnectionToken);
                             case SystemEventType.Disconnected:
-                                webPubSubMessage = new DisconnectedMessage(message);
-                                return true;
+                                return new DisconnectedMessage(message);
+                            default:
+                                throw new InvalidDataException($"Unsupported event {systemEventType}");
                         }
-                        break;
 
                     default:
                         throw new InvalidDataException($"Unsupported type {eventType}");
@@ -317,7 +314,7 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
             }
         }
 
-        public void WriteMessage(WebPubSubMessage message, IBufferWriter<byte> output)
+        public virtual void WriteMessage(WebPubSubMessage message, IBufferWriter<byte> output)
         {
             if (message == null)
             {

@@ -22,9 +22,8 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
         /// Creates a new <see cref="WebPubSubMessage"/> from the specified serialized representation。
         /// </summary>
         /// <param name="input">The serialized representation of the message.</param>
-        /// <param name="message">When this method returns <c>true</c>, contains the parsed message.</param>
-        /// <returns>A value that is <c>true</c> if the <see cref="WebPubSubMessage"/> was successfully parsed; otherwise, <c>false</c>.</returns>
-        bool TryParseMessage(ref ReadOnlySequence<byte> input, out WebPubSubMessage message);
+        /// <returns>A <see cref="WebPubSubMessage"/></returns>
+        WebPubSubMessage ParseMessage(ReadOnlySequence<byte> input);
 
         /// <summary>
         /// Writes the specified <see cref="WebPubSubMessage"/> to a writer.
