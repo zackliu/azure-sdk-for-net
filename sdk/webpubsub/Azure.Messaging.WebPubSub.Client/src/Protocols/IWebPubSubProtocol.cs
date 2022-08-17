@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Text;
 
 namespace Azure.Messaging.WebPubSub.Client.Protocols
@@ -17,6 +18,11 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
         /// Gets the name of the protocol. The name is used by Web PubSub client to resolve the protocol between the client and server.
         /// </summary>
         string Name { get; }
+
+        /// <summary>
+        /// Get the WebSocketMessageType to be used in websocket bytes
+        /// </summary>
+        WebSocketMessageType WebSocketMessageType { get; }
 
         /// <summary>
         /// Creates a new <see cref="WebPubSubMessage"/> from the specified serialized representation。

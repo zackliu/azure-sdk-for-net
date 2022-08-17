@@ -6,9 +6,11 @@
     <PackageTags>azure;webpubsub.client</PackageTags>
     <NoWarn>$(NoWarn);0067</NoWarn>
     <IncludeOperationsSharedSource>true</IncludeOperationsSharedSource>
+    <RequiredTargetFrameworks>netcoreapp3.1</RequiredTargetFrameworks>
+    <TargetFrameworks>$(RequiredTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Core" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
   </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
+using Azure.Core;
 using Azure.Messaging.WebPubSub.Client.Models;
 
 namespace Azure.Messaging.WebPubSub.Client
@@ -37,7 +38,7 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <summary>
         /// The data content
         /// </summary>
-        public BinaryData Data { get; }
+        public RequestContent Data { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SendToGroupMessage"/> class.
@@ -47,7 +48,7 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <param name="dataType">Type of the data</param>
         /// <param name="ackId">The optional ack-id</param>
         /// <param name="noEcho">Optional. If set to true, this message is not echoed back to the same connection.</param>
-        public SendToGroupMessage(string group, BinaryData data, DataType dataType, ulong? ackId, bool noEcho)
+        public SendToGroupMessage(string group, RequestContent data, DataType dataType, ulong? ackId, bool noEcho)
         {
             Group = group;
             AckId = ackId;
