@@ -8,13 +8,12 @@ using System.Text;
 namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
-    /// A set of options when sending data to group.
+    /// Exception for process message failed
     /// </summary>
-    public class SendToServerOptions
+    public class ProcessMessageFailedException : Exception
     {
-        /// <summary>
-        /// Specify whether the message need to be fire-and-forget.
-        /// </summary>
-        public bool FireAndForget { get; set; }
+        internal ProcessMessageFailedException(string message, Exception inner): base(message, inner)
+        {
+        }
     }
 }

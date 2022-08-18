@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
 using Azure.Core;
-using Azure.Messaging.WebPubSub.Client.Models;
 
 namespace Azure.Messaging.WebPubSub.Client
 {

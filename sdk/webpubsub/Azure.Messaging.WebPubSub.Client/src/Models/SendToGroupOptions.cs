@@ -21,7 +21,5 @@ namespace Azure.Messaging.WebPubSub.Client
         /// Specify whether the message need to be fire-and-forget.
         /// </summary>
         public bool FireAndForget { get; set; }
-
-        public WebPubSubRetryPolicy MessageRetryPolicy { get; set; }
     }
 }

@@ -1,9 +1,14 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 
 namespace Azure.Messaging.WebPubSub.Client.Protocols
 {
@@ -54,6 +59,8 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
         public abstract string Name { get; }
 
         public abstract bool IsReliableSubProtocol { get; }
+
+        public WebSocketMessageType WebSocketMessageType => WebSocketMessageType.Text;
 
         public ReadOnlyMemory<byte> GetMessageBytes(WebPubSubMessage message)
         {
@@ -356,7 +363,15 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                         }
                         writer.WriteBoolean(NoEchoPropertyNameBytes, sendToGroupMessage.NoEcho);
                         writer.WriteString(DataTypePropertyNameBytes, sendToGroupMessage.DataType.Name);
-                        writer.WriteBase64String(DataPropertyNameBytes, sendToGroupMessage.Data);
+                        if (!sendToGroupMessage.Data.TryComputeLength(out var groupDataLength))
+                        {
+                            throw new InvalidOperationException("Can not get length of Data");
+                        }
+                        using (var ms = new MemoryStream(new byte[groupDataLength]))
+                        {
+                            sendToGroupMessage.Data.WriteTo(ms, CancellationToken.None);
+                            writer.WriteBase64String(DataPropertyNameBytes, ms.ToArray());
+                        }
                         break;
                     case SendEventMessage sendEventMessage:
                         writer.WriteString(TypePropertyNameBytes, SendEventTypeBytes);
@@ -365,7 +380,20 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                             writer.WriteNumber(AckIdPropertyNameBytes, sendEventMessage.AckId.Value);
                         }
                         writer.WriteString(DataTypePropertyNameBytes, sendEventMessage.DataType.Name);
-                        writer.WriteBase64String(DataPropertyNameBytes, sendEventMessage.Data);
+                        using (var w = new MemoryBufferWriter())
+                        {
+                            sendEventMessage.Data.WriteTo(w, CancellationToken.None);
+                            w.ToArray();
+                        }
+                        if (!sendEventMessage.Data.TryComputeLength(out var eventDataLength))
+                        {
+                            throw new InvalidOperationException("Can not get length of Data");
+                        }
+                        using (var ms = new MemoryStream(new byte[eventDataLength]))
+                        {
+                            sendEventMessage.Data.WriteTo(ms, CancellationToken.None);
+                            writer.WriteBase64String(DataPropertyNameBytes, ms.ToArray());
+                        }
                         break;
                     case SequenceAckMessage sequenceAckMessage:
                         writer.WriteString(TypePropertyNameBytes, SequenceAckTypeBytes);

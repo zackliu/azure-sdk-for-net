@@ -32,6 +32,9 @@ namespace Azure.Messaging.WebPubSub.Client
         /// </summary>
         public static readonly DataType Protobuf = new DataType("protobuf");
 
+        /// <summary>
+        /// The name of the data type
+        /// </summary>
         public string Name { get; }
 
         private DataType(string name)
