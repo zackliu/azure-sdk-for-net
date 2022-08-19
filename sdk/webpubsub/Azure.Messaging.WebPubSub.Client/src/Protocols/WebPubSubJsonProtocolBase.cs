@@ -64,7 +64,9 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
 
         public ReadOnlyMemory<byte> GetMessageBytes(WebPubSubMessage message)
         {
-            throw new NotImplementedException();
+            using var writer = new MemoryBufferWriter();
+            WriteMessage(message, writer);
+            return new Memory<byte>(writer.ToArray());
         }
 
         public virtual WebPubSubMessage ParseMessage(ReadOnlySequence<byte> input)
@@ -82,7 +84,7 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                 string from = null;
                 FromType fromType = FromType.Server;
                 ErrorDetail errorDetail = null;
-                DataType dataType = null;
+                WebPubSubDataType dataType = WebPubSubDataType.Text;
                 string userId = null;
                 string connectionId = null;
                 string reconnectionToken = null;
@@ -109,7 +111,7 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                         case JsonTokenType.PropertyName:
                             if (reader.ValueTextEquals(TypePropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                type = reader.ReadAsString(TypePropertyName);
+                                type = reader.ReadAsNullableString(TypePropertyName);
                                 if (type == null)
                                 {
                                     throw new InvalidDataException($"Expected '{TypePropertyName}' to be of type {JsonTokenType.String}.");
@@ -121,11 +123,11 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                             }
                             else if (reader.ValueTextEquals(GroupPropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                group = reader.ReadAsString(GroupPropertyName);
+                                group = reader.ReadAsNullableString(GroupPropertyName);
                             }
                             else if (reader.ValueTextEquals(EventPropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                @event = reader.ReadAsString(EventPropertyName);
+                                @event = reader.ReadAsNullableString(EventPropertyName);
                                 if (!Enum.TryParse(@event, true, out systemEventType))
                                 {
                                     throw new InvalidDataException($"Unknown '{EventPropertyName}': {@event}.");
@@ -133,27 +135,10 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                             }
                             else if (reader.ValueTextEquals(DataTypePropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                var dataTypeValue = reader.ReadAsString(DataTypePropertyName);
-                                if (!Enum.TryParse<MessageDataType>(dataTypeValue, true, out var messageDataType))
+                                var dataTypeValue = reader.ReadAsNullableString(DataTypePropertyName);
+                                if (!Enum.TryParse<WebPubSubDataType>(dataTypeValue, true, out dataType))
                                 {
                                     throw new InvalidDataException($"Unknown '{DataTypePropertyName}': {dataTypeValue}.");
-                                }
-                                switch (messageDataType)
-                                {
-                                    case MessageDataType.Text:
-                                        dataType = DataType.Text;
-                                        break;
-                                    case MessageDataType.Json:
-                                        dataType = DataType.Json;
-                                        break;
-                                    case MessageDataType.Binary:
-                                        dataType = DataType.Binary;
-                                        break;
-                                    case MessageDataType.Protobuf:
-                                        dataType = DataType.Protobuf;
-                                        break;
-                                    default:
-                                        throw new InvalidDataException($"Unknown '{DataTypePropertyName}': {dataTypeValue}.");
                                 }
                             }
                             else if (reader.ValueTextEquals(AckIdPropertyNameBytes.EncodedUtf8Bytes))
@@ -195,7 +180,7 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                             }
                             else if (reader.ValueTextEquals(FromPropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                from = reader.ReadAsString(FromPropertyName);
+                                from = reader.ReadAsNullableString(FromPropertyName);
                                 if (!Enum.TryParse(from, true, out fromType))
                                 {
                                     throw new InvalidDataException($"Unknown '{FromPropertyName}': {from}.");
@@ -203,23 +188,23 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                             }
                             else if (reader.ValueTextEquals(UserIdPropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                userId = reader.ReadAsString(UserIdPropertyName);
+                                userId = reader.ReadAsNullableString(UserIdPropertyName);
                             }
                             else if (reader.ValueTextEquals(ConnectionIdPropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                connectionId = reader.ReadAsString(ConnectionIdPropertyName);
+                                connectionId = reader.ReadAsNullableString(ConnectionIdPropertyName);
                             }
                             else if (reader.ValueTextEquals(ReconnectionTokenPropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                reconnectionToken = reader.ReadAsString(ReconnectionTokenPropertyName);
+                                reconnectionToken = reader.ReadAsNullableString(ReconnectionTokenPropertyName);
                             }
                             else if (reader.ValueTextEquals(MessagePropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                message = reader.ReadAsString(MessagePropertyName);
+                                message = reader.ReadAsNullableString(MessagePropertyName);
                             }
                             else if (reader.ValueTextEquals(FromUserIdPropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                fromUserId = reader.ReadAsString(FromUserIdPropertyName);
+                                fromUserId = reader.ReadAsNullableString(FromUserIdPropertyName);
                             }
                             else
                             {
@@ -241,17 +226,17 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
 
                 if (hasDataToken)
                 {
-                    if (dataType == DataType.Binary ||
-                        dataType == DataType.Protobuf ||
-                        dataType == DataType.Text)
+                    if (dataType == WebPubSubDataType.Binary ||
+                        dataType == WebPubSubDataType.Protobuf ||
+                        dataType == WebPubSubDataType.Text)
                     {
                         if (dataReader.TokenType != JsonTokenType.String)
                         {
                             throw new InvalidDataException($"'data' should be a string when 'dataType' is 'binary,text,protobuf'.");
                         }
 
-                        if (dataType == DataType.Binary ||
-                            dataType == DataType.Protobuf)
+                        if (dataType == WebPubSubDataType.Binary ||
+                            dataType == WebPubSubDataType.Protobuf)
                         {
                             if (!dataReader.TryGetBytesFromBase64(out var bytes))
                             {
@@ -261,10 +246,10 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                         }
                         else
                         {
-                            data = new BinaryData(dataReader.ReadAsString(DataTypePropertyName));
+                            data = new BinaryData(dataReader.GetString());
                         }
                     }
-                    else if (dataType == DataType.Json)
+                    else if (dataType == WebPubSubDataType.Json)
                     {
                         if (dataReader.TokenType == JsonTokenType.Null)
                         {
@@ -362,16 +347,8 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                             writer.WriteNumber(AckIdPropertyNameBytes, sendToGroupMessage.AckId.Value);
                         }
                         writer.WriteBoolean(NoEchoPropertyNameBytes, sendToGroupMessage.NoEcho);
-                        writer.WriteString(DataTypePropertyNameBytes, sendToGroupMessage.DataType.Name);
-                        if (!sendToGroupMessage.Data.TryComputeLength(out var groupDataLength))
-                        {
-                            throw new InvalidOperationException("Can not get length of Data");
-                        }
-                        using (var ms = new MemoryStream(new byte[groupDataLength]))
-                        {
-                            sendToGroupMessage.Data.WriteTo(ms, CancellationToken.None);
-                            writer.WriteBase64String(DataPropertyNameBytes, ms.ToArray());
-                        }
+                        writer.WriteString(DataTypePropertyNameBytes, sendToGroupMessage.DataType.ToString());
+                        WriteData(writer, sendToGroupMessage.Data, sendToGroupMessage.DataType);
                         break;
                     case SendEventMessage sendEventMessage:
                         writer.WriteString(TypePropertyNameBytes, SendEventTypeBytes);
@@ -379,21 +356,8 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                         {
                             writer.WriteNumber(AckIdPropertyNameBytes, sendEventMessage.AckId.Value);
                         }
-                        writer.WriteString(DataTypePropertyNameBytes, sendEventMessage.DataType.Name);
-                        using (var w = new MemoryBufferWriter())
-                        {
-                            sendEventMessage.Data.WriteTo(w, CancellationToken.None);
-                            w.ToArray();
-                        }
-                        if (!sendEventMessage.Data.TryComputeLength(out var eventDataLength))
-                        {
-                            throw new InvalidOperationException("Can not get length of Data");
-                        }
-                        using (var ms = new MemoryStream(new byte[eventDataLength]))
-                        {
-                            sendEventMessage.Data.WriteTo(ms, CancellationToken.None);
-                            writer.WriteBase64String(DataPropertyNameBytes, ms.ToArray());
-                        }
+                        writer.WriteString(DataTypePropertyNameBytes, sendEventMessage.DataType.ToString());
+                        WriteData(writer, sendEventMessage.Data, sendEventMessage.DataType);
                         break;
                     case SequenceAckMessage sequenceAckMessage:
                         writer.WriteString(TypePropertyNameBytes, SequenceAckTypeBytes);
@@ -428,11 +392,11 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                     case JsonTokenType.PropertyName:
                         if (reader.ValueTextEquals(ErrorNamePropertyNameBytes.EncodedUtf8Bytes))
                         {
-                            errorName = reader.ReadAsString(ErrorNamePropertyName);
+                            errorName = reader.ReadAsNullableString(ErrorNamePropertyName);
                         }
                         else if (reader.ValueTextEquals(MessagePropertyNameBytes.EncodedUtf8Bytes))
                         {
-                            errorMessage = reader.ReadAsString(MessagePropertyName);
+                            errorMessage = reader.ReadAsNullableString(MessagePropertyName);
                         }
                         break;
                     case JsonTokenType.EndObject:
@@ -453,6 +417,23 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
             }
         }
 
+        private static void WriteData(Utf8JsonWriter writer, BinaryData data, WebPubSubDataType dataType)
+        {
+            switch (dataType)
+            {
+                case WebPubSubDataType.Text:
+                case WebPubSubDataType.Json:
+                    writer.WriteString(DataPropertyNameBytes, data);
+                    break;
+                case WebPubSubDataType.Binary:
+                case WebPubSubDataType.Protobuf:
+                    writer.WriteBase64String(DataPropertyNameBytes, data);
+                    break;
+                default:
+                    throw new InvalidDataException($"{dataType} is not a supported DataType");
+            }
+        }
+
         private enum DownstreamEventType
         {
             Ack,
@@ -470,14 +451,6 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
         {
             Connected,
             Disconnected,
-        }
-
-        private enum MessageDataType
-        {
-            Text,
-            Binary,
-            Json,
-            Protobuf
         }
     }
 }

@@ -72,9 +72,14 @@ namespace Azure.Messaging.WebPubSub.Client
             };
         }
 
-        public static string ReadAsString(this ref Utf8JsonReader reader, string propertyName)
+        public static string ReadAsNullableString(this ref Utf8JsonReader reader, string propertyName)
         {
             reader.Read();
+
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
 
             if (reader.TokenType != JsonTokenType.String)
             {

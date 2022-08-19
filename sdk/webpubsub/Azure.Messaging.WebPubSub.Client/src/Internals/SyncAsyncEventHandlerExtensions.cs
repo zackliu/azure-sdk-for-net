@@ -35,10 +35,6 @@ namespace Azure.Messaging.WebPubSub.Client
         /// The name of the event to construct a helpful exception message and
         /// distributed tracing span.
         /// </param>
-        /// <param name="clientDiagnostics">
-        /// Client diagnostics to wrap all the handlers in a new distributed
-        /// tracing span.
-        /// </param>
         /// <returns>
         /// A task that represents running all of the event's handlers.
         /// </returns>
@@ -48,7 +44,7 @@ namespace Azure.Messaging.WebPubSub.Client
         /// </exception>
         /// <exception cref="ArgumentNullException">
         /// Thrown when <paramref name="e"/>, <paramref name="declaringTypeName"/>,
-        /// <paramref name="eventName"/>, or <paramref name="clientDiagnostics"/>
+        /// <paramref name="eventName"/>
         /// are null.
         /// </exception>
         /// <exception cref="ArgumentException">
@@ -59,14 +55,12 @@ namespace Azure.Messaging.WebPubSub.Client
             this SyncAsyncEventHandler<T> eventHandler,
             T e,
             string declaringTypeName,
-            string eventName,
-            ClientDiagnostics clientDiagnostics)
+            string eventName)
             where T : SyncAsyncEventArgs
         {
             Argument.AssertNotNull(e, nameof(e));
             Argument.AssertNotNullOrEmpty(declaringTypeName, nameof(declaringTypeName));
             Argument.AssertNotNullOrEmpty(eventName, nameof(eventName));
-            Argument.AssertNotNull(clientDiagnostics, nameof(clientDiagnostics));
 
             // Get the invocation list, but return early if there's no work
             if (eventHandler == null)
@@ -78,8 +72,6 @@ namespace Azure.Messaging.WebPubSub.Client
             // Wrap handler invocation in a distributed tracing span so it's
             // easy for customers to track and measure
             string eventFullName = declaringTypeName + "." + eventName;
-            using DiagnosticScope scope = clientDiagnostics.CreateScope(eventFullName);
-            scope.Start();
             try
             {
                 // Collect any exceptions raised by handlers
@@ -116,9 +108,8 @@ namespace Azure.Messaging.WebPubSub.Client
                         failures);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                scope.Failed(ex);
                 throw;
             }
         }

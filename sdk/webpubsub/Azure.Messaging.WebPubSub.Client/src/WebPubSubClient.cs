@@ -41,10 +41,10 @@ namespace Azure.Messaging.WebPubSub.Client
         private ConnectionEndpoint _connnectionEndpoint;
         private string _connectionId;
         private string _reconnectionToken;
-        private ulong _latestSequenceId;
+        private SequenceId _sequenceId;
         private bool _isInitialConnected;
         private DisconnectedMessage _latestDisconnectedMessage;
-        private ConcurrentDictionary<ulong, AckEntity> _cache = new();
+        private ConcurrentDictionary<ulong, AckEntity> _ackCache = new();
         private ConcurrentDictionary<string, Func<GroupResponseMessage, Task>> _groupEventHandlers = new();
         private ulong _nextAckId;
 
@@ -68,10 +68,15 @@ namespace Azure.Messaging.WebPubSub.Client
         internal WebPubSubClientStatus ClientStatus => _clientStatus;
 
         /// <summary>
+        /// The connection id of the client
+        /// </summary>
+        public string ConnectionId => _connectionId;
+
+        /// <summary>
         /// Initializes a PubSub client.
         /// </summary>
         /// <param name="clientAccessUri">The uri to connect to the service.</param>
-        public WebPubSubClient(Uri clientAccessUri) : this(new WebPubSubClientCredential(clientAccessUri), null)
+        public WebPubSubClient(Uri clientAccessUri) : this(new WebPubSubClientCredential(clientAccessUri))
         {
         }
 
@@ -80,7 +85,7 @@ namespace Azure.Messaging.WebPubSub.Client
         /// </summary>
         /// <param name="credential">A uri provider that will be called to return the uri for each connecting or reconnecting.</param>
         /// <param name="options">A option for the client.</param>
-        public WebPubSubClient(WebPubSubClientCredential credential, WebPubSubClientOptions options)
+        public WebPubSubClient(WebPubSubClientCredential credential, WebPubSubClientOptions options = null)
         {
             _webPubSubClientCredential = credential ?? throw new ArgumentNullException(nameof(credential));
 
@@ -207,7 +212,7 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <param name="ackId">The ack-id for the operation. The message with the same ack-id is treated as the same message. Leave it omitted to generate by library.</param>
         /// <param name="cancellationToken">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
         /// <returns>The ack for the operation</returns>
-        public virtual async Task<AckMessage> SendToGroupAsync(string group, RequestContent content, DataType dataType, ulong? ackId = null, Action<SendToGroupOptions> optionsBuilder = null, CancellationToken cancellationToken = default)
+        public virtual async Task<AckMessage> SendToGroupAsync(string group, BinaryData content, WebPubSubDataType dataType, ulong? ackId = null, Action<SendToGroupOptions> optionsBuilder = null, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
             AssertWritableStatus();
@@ -241,7 +246,7 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <param name="optionsBuilder">A set of options used while sending to sever.</param>
         /// <param name="cancellationToken">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
         /// <returns>The ack for the operation</returns>
-        public virtual async Task<AckMessage> SendToServerAsync(RequestContent content, DataType dataType, ulong? ackId = null, Action<SendToServerOptions> optionsBuilder = null, CancellationToken cancellationToken = default)
+        public virtual async Task<AckMessage> SendToServerAsync(BinaryData content, WebPubSubDataType dataType, ulong? ackId = null, Action<SendToServerOptions> optionsBuilder = null, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
             AssertWritableStatus();
@@ -485,17 +490,25 @@ namespace Azure.Messaging.WebPubSub.Client
                 _clientStatus = WebPubSubClientStatus.Disconnected;
             }
 
-            return Disconnected.RaiseAsync(new DisconnectedEventArgs(disconnectedMessage, false), nameof(DisconnectedEventArgs), nameof(Disconnected), null);
+            foreach (var entity in _ackCache)
+            {
+                if (_ackCache.TryRemove(entity.Key, out var value))
+                {
+                    value.SetException(new SendMessageFailedException("Connection is disconnected before receive ack from the service"));
+                }
+            }
+
+            return Disconnected.RaiseAsync(new DisconnectedEventArgs(disconnectedMessage, false), nameof(DisconnectedEventArgs), nameof(Disconnected));
         }
 
         private Task RaiseConnected(ConnectedMessage connectedMessage)
         {
-            return Connected.RaiseAsync(new ConnectedEventArgs(connectedMessage, false), nameof(ConnectedEventArgs), nameof(Connected), null);
+            return Connected.RaiseAsync(new ConnectedEventArgs(connectedMessage, false), nameof(ConnectedEventArgs), nameof(Connected));
         }
 
         private Task RaiseServerMessageReceived(ServerResponseMessage serverResponseMessage)
         {
-            return ServerMessageReceived.RaiseAsync(new ServerMessageEventArgs(serverResponseMessage, false), nameof(ServerMessageEventArgs), nameof(ServerMessageReceived), null);
+            return ServerMessageReceived.RaiseAsync(new ServerMessageEventArgs(serverResponseMessage, false), nameof(ServerMessageEventArgs), nameof(ServerMessageReceived));
         }
 
         private async Task TryRecovery()
@@ -578,7 +591,11 @@ namespace Azure.Messaging.WebPubSub.Client
             {
                 if (groupResponseMessage.SequenceId != null)
                 {
-                    _ = PerformSequenceAckAsync(groupResponseMessage.SequenceId.Value);
+                    if (!_sequenceId.TryUpdate(groupResponseMessage.SequenceId.Value))
+                    {
+                        // drop duplicated msg
+                        return;
+                    }
                 }
 
                 if (_groupEventHandlers.TryGetValue(groupResponseMessage.Group, out var handler))
@@ -591,7 +608,11 @@ namespace Azure.Messaging.WebPubSub.Client
             {
                 if (serverResponseMessage.SequenceId != null)
                 {
-                    _ = PerformSequenceAckAsync(serverResponseMessage.SequenceId.Value);
+                    if (!_sequenceId.TryUpdate(serverResponseMessage.SequenceId.Value))
+                    {
+                        // drop duplicated msg
+                        return Task.CompletedTask;
+                    }
                 }
 
                 return RaiseServerMessageReceived(serverResponseMessage);
@@ -599,7 +620,7 @@ namespace Azure.Messaging.WebPubSub.Client
 
             Task HandleAckMessage(AckMessage ackMessage)
             {
-                if (_cache.TryGetValue(ackMessage.AckId, out var entity))
+                if (_ackCache.TryGetValue(ackMessage.AckId, out var entity))
                 {
                     if (ackMessage.Success ||
                         ackMessage.Error?.Name == "Duplicate")
@@ -616,6 +637,8 @@ namespace Azure.Messaging.WebPubSub.Client
 
         private async Task PerformSequenceAckAsync(ulong sequenceId)
         {
+            
+
             if (sequenceId > _latestSequenceId)
             {
                 _latestSequenceId = sequenceId;
@@ -645,7 +668,7 @@ namespace Azure.Messaging.WebPubSub.Client
 
         private AckEntity CreateAckEntity(ulong ackId)
         {
-            return _cache.AddOrUpdate(ackId, new AckEntity(), (_, oldEntity) => oldEntity);
+            return _ackCache.AddOrUpdate(ackId, new AckEntity(), (_, oldEntity) => oldEntity);
         }
 
         private void ThrowIfDisposed()
@@ -681,6 +704,53 @@ namespace Azure.Messaging.WebPubSub.Client
             public Uri FullEndpointUrl { get; set; }
 
             public string BasePath { get; set; }
+        }
+
+        private class SequenceId
+        {
+            private readonly object _lock = new object();
+            private ulong _sequenceId;
+            private bool _updated;
+
+            public bool TryUpdate(ulong sequenceId)
+            {
+                lock (_lock)
+                {
+                    _updated = true;
+
+                    if (sequenceId > _sequenceId)
+                    {
+                        _sequenceId = sequenceId;
+                        return true;
+                    }
+                    return false;
+                }
+            }
+
+            public bool TryGetSequenceId(out ulong sequenceId)
+            {
+                lock (_lock)
+                {
+                    if (_updated)
+                    {
+                        sequenceId = _sequenceId;
+                        _updated = false;
+                        return true;
+                    }
+
+                    sequenceId = 0;
+                    return false;
+                }
+            }
+
+            public void Reset()
+            {
+                lock (_lock)
+                {
+                    _sequenceId = 0;
+                    _updated = false;
+                }
+            }
         }
     }
 }

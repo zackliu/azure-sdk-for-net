@@ -22,12 +22,12 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <summary>
         /// Type of the data
         /// </summary>
-        public DataType DataType { get; }
+        public WebPubSubDataType DataType { get; }
 
         /// <summary>
         /// The data content
         /// </summary>
-        public RequestContent Data { get; }
+        public BinaryData Data { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SendEventMessage"/> class.
@@ -35,7 +35,7 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <param name="data">The data content</param>
         /// <param name="dataType">Type of the data</param>
         /// <param name="ackId">The optional ack-id</param>
-        public SendEventMessage(RequestContent data, DataType dataType, ulong? ackId)
+        public SendEventMessage(BinaryData data, WebPubSubDataType dataType, ulong? ackId)
         {
             AckId = ackId;
             DataType = dataType;
