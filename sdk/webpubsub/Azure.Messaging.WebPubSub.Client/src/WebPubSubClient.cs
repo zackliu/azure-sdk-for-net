@@ -4,17 +4,11 @@
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Net.Sockets;
 using System.Net.WebSockets;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Azure.Core;
 using Azure.Messaging.WebPubSub.Client.Protocols;
 using Microsoft.AspNetCore.WebUtilities;
@@ -33,6 +27,7 @@ namespace Azure.Messaging.WebPubSub.Client
         private readonly WebPubSubClientCredential _webPubSubClientCredential;
         private readonly WebPubSubClientOptions _options;
         private readonly IWebPubSubProtocol _protocol;
+        private readonly SequenceId _sequenceId = new SequenceId();
 
         private readonly object _ackIdLock = new();
         private readonly object _statusLock = new();
@@ -41,7 +36,6 @@ namespace Azure.Messaging.WebPubSub.Client
         private ConnectionEndpoint _connnectionEndpoint;
         private string _connectionId;
         private string _reconnectionToken;
-        private SequenceId _sequenceId;
         private bool _isInitialConnected;
         private DisconnectedMessage _latestDisconnectedMessage;
         private ConcurrentDictionary<ulong, AckEntity> _ackCache = new();
@@ -125,16 +119,25 @@ namespace Azure.Messaging.WebPubSub.Client
 
             lock (_statusLock)
             {
-                if (_clientStatus != WebPubSubClientStatus.Disconnected)
+                if (_clientStatus == WebPubSubClientStatus.Disconnected)
+                {
+                    _clientStatus = WebPubSubClientStatus.Connecting;
+                }
+                else
                 {
                     return;
                 }
-
-                _clientStatus = WebPubSubClientStatus.Connecting;
             }
 
             try
             {
+                // Reset before new connection.
+                _sequenceId.Reset();
+                _isInitialConnected = false;
+                _latestDisconnectedMessage = null;
+                _ackCache.Clear();
+                _groupEventHandlers.Clear();
+
                 var uri = await _webPubSubClientCredential.GetClientAccessUri(default).ConfigureAwait(false);
                 _connnectionEndpoint = ParseClientAccessUri(uri);
                 await ConnectCoreAsync(_connnectionEndpoint.FullEndpointUrl, cancellationToken).ConfigureAwait(false);
@@ -355,7 +358,15 @@ namespace Azure.Messaging.WebPubSub.Client
 
         private async Task ListenLoop(WebSocket socket, CancellationToken token)
         {
-            var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(token, _stopCts.Token).Token;
+            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token, _stopCts.Token);
+            var linkedToken = linkedTokenSource.Token;
+
+            var sequenceAckTask = Task.CompletedTask;
+            var sequenceAckCts = new CancellationTokenSource();
+            if (_protocol.IsReliableSubProtocol)
+            {
+                sequenceAckTask = Task.Run(() => SequenceAckLoop(sequenceAckCts.Token), CancellationToken.None);
+            }
 
             using var buffer = new MemoryBufferWriter();
             try
@@ -388,6 +399,16 @@ namespace Azure.Messaging.WebPubSub.Client
             }
             finally
             {
+                try
+                {
+                    sequenceAckCts.Cancel();
+                    sequenceAckCts.Dispose();
+                    await sequenceAckTask.ConfigureAwait(false);
+                }
+                catch
+                {
+                }
+
                 if (socket.CloseStatus == WebSocketCloseStatus.PolicyViolation)
                 {
                     _ = Task.Run(() => RaiseDisconnected(_latestDisconnectedMessage), CancellationToken.None);
@@ -520,6 +541,13 @@ namespace Azure.Messaging.WebPubSub.Client
                 return;
             }
 
+            // Unrecoverable protocol
+            if (!_protocol.IsReliableSubProtocol)
+            {
+                _ = Task.Run(() => RaiseDisconnected(_latestDisconnectedMessage), CancellationToken.None);
+                return;
+            }
+
             var uri = BuildRecoveryUri();
 
             // Can't recovery
@@ -635,22 +663,27 @@ namespace Azure.Messaging.WebPubSub.Client
             }
         }
 
-        private async Task PerformSequenceAckAsync(ulong sequenceId)
+        private async Task SequenceAckLoop(CancellationToken token)
         {
-            
+            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token, _stopCts.Token);
+            var linkedToken = linkedTokenSource.Token;
 
-            if (sequenceId > _latestSequenceId)
+            while (!linkedToken.IsCancellationRequested)
             {
-                _latestSequenceId = sequenceId;
-
-                var payload = _protocol.GetMessageBytes(new SequenceAckMessage(_latestSequenceId));
-
                 try
                 {
-                    await SendCoreAsync(payload, _protocol.WebSocketMessageType, true, CancellationToken.None).ConfigureAwait(false);
+                    if (_sequenceId.TryGetSequenceId(out var sequenceId))
+                    {
+                        var payload = _protocol.GetMessageBytes(new SequenceAckMessage(sequenceId));
+                        await SendCoreAsync(payload, _protocol.WebSocketMessageType, true, linkedToken).ConfigureAwait(false);
+                    }
                 }
                 catch
                 {
+                }
+                finally
+                {
+                    await Task.Delay(1000, linkedToken).ConfigureAwait(false);
                 }
             }
         }
