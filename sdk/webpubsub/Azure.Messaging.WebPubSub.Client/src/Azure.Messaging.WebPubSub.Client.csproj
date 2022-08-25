@@ -13,4 +13,8 @@
     <PackageReference Include="Azure.Core" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(AzureCoreSharedSources)AzureEventSource.cs" LinkBase="Shared\Azure.Core" />
+  </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using Azure.Core;
 using Azure.Messaging.WebPubSub.Client.Protocols;
@@ -15,13 +16,22 @@ namespace Azure.Messaging.WebPubSub.Client
     public class WebPubSubClientOptions
     {
         /// <summary>
-        /// The default retry options for sending messages.
-        /// </summary>
-        public RetryOptions MessageRetryOptions { get; set; }
-
-        /// <summary>
         /// Get or set the protocol to use.
         /// </summary>
         public IWebPubSubProtocol Protocol { get; set; }
+
+        /// <summary>
+        /// Get or set the reconnection options
+        /// </summary>
+        public ReconnectionOptions ReconnectionOptions { get; set; }
+
+        /// <summary>
+        /// Construct a WebPubSubClientOptions
+        /// </summary>
+        public WebPubSubClientOptions()
+        {
+            Protocol = new WebPubSubJsonReliableProtocol();
+            ReconnectionOptions = new ReconnectionOptions();
+        }
     }
 }

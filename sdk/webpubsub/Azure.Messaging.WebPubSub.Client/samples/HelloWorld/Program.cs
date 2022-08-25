@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Azure.Core;
+using Azure.Identity;
 using Azure.Messaging.WebPubSub;
 using Azure.Messaging.WebPubSub.Client;
 
@@ -9,46 +10,43 @@ namespace HelloWorld
     {
         static async Task Main(string[] args)
         {
+            //var serviceClient = new WebPubSubServiceClient("", "hub");
             var serviceClient = new WebPubSubServiceClient("", "hub");
 
             var client = new WebPubSubClient(new WebPubSubClientCredential(new WebPubSubClientCredentialOptions(token => serviceClient.GetClientAccessUriAsync(roles: new[] { "webpubsub.joinLeaveGroup", "webpubsub.sendToGroup" }))));
-            client.Connected += new SyncAsyncEventHandler<ConnectedEventArgs>(e =>
+            client.Connected += new (e =>
             {
                 Console.WriteLine($"Connection {e.ConnectedMessage.ConnectionId} is connected");
                 return Task.CompletedTask;
             });
-            client.Disconnected += new SyncAsyncEventHandler<DisconnectedEventArgs>(e =>
+            client.Disconnected += new (e =>
             {
                 Console.WriteLine($"Connection {client.ConnectionId} is disconnected");
                 return Task.CompletedTask;
             });
-            await client.ConnectAsync();
-
-            await client.JoinGroupAsync("group1", msg =>
+            client.Group("group1").MessageReceived += new (e =>
             {
-                if (msg.DataType == WebPubSubDataType.Text || msg.DataType == WebPubSubDataType.Json)
-                {
-                    Console.WriteLine($"Receive group message from {msg.Group}: {msg.Data}");
-                }
-                else if (msg.DataType == WebPubSubDataType.Binary || msg.DataType == WebPubSubDataType.Protobuf)
-                {
-                    Console.WriteLine($"Receive group message from {msg.Group}: {msg.Data}");
-                }
-                
+                Console.WriteLine($"Receive group message from {e.GroupResponseMessage.Group}: {e.GroupResponseMessage.Data}");
                 return Task.CompletedTask;
             });
 
-            await client.SendToGroupAsync("group1", BinaryData.FromString("hello world"), WebPubSubDataType.Text);
-            await client.SendToGroupAsync("group1", BinaryData.FromObjectAsJson(new
-            {
-                Foo = "Hello World!",
-                Bar = 42
-            }), WebPubSubDataType.Json);
-            await client.SendToGroupAsync("group1", BinaryData.FromBytes(Convert.FromBase64String("YXNkZmFzZGZk")), WebPubSubDataType.Binary);
+            await client.ConnectAsync();
 
-            await Task.Delay(10000);
+            await client.Group("group1").JoinAsync();
+            
+            //await client.Group("group1").SendAsync(BinaryData.FromString("hello world"), WebPubSubDataType.Text);
+            //await client.Group("group1").SendAsync(BinaryData.FromObjectAsJson(new
+            //{
+            //    Foo = "Hello World!",
+            //    Bar = 42
+            //}), WebPubSubDataType.Json);
+            await client.Group("group1").SendAsync(BinaryData.FromBytes(Convert.FromBase64String("YXNkZmFzZGZk")), WebPubSubDataType.Binary);
+
+            await Task.Delay(3000);
 
             await client.StopAsync();
+
+            await Task.Delay(100000);
         }
     }
 }

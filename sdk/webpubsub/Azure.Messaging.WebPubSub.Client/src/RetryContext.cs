@@ -11,21 +11,21 @@ namespace Azure.Messaging.WebPubSub.Client
     /// The context passed to <see cref="WebPubSubRetryPolicy.NextRetryDelay(RetryContext)"/> to help the policy determine
     /// how long to wait before the next retry and whether there should be another retry at all.
     /// </summary>
-    public sealed class RetryContext
+    internal sealed class RetryContext
     {
         /// <summary>
         /// The number of consecutive failed retries so far.
         /// </summary>
-        public long PreviousRetryCount { get; set; }
+        public int RetryAttempt { get; set; }
 
         /// <summary>
         /// The amount of time spent retrying so far.
         /// </summary>
-        public TimeSpan ElapsedTime { get; set; }
+        internal TimeSpan ElapsedTime { get; set; }
 
         /// <summary>
         /// The error precipitating the current retry if any.
         /// </summary>
-        public Exception RetryReason { get; set; }
+        internal Exception RetryReason { get; set; }
     }
 }

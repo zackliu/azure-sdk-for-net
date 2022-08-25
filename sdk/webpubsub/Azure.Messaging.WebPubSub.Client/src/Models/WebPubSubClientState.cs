@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Azure.Messaging.WebPubSub.Client
 {
-    internal enum WebPubSubClientStatus
+    internal enum WebPubSubClientState
     {
         Disconnected,
         Connecting,
