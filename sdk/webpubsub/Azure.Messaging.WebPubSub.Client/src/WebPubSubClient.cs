@@ -183,13 +183,14 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <summary>
         /// Send custom event and wait for the ack.
         /// </summary>
+        /// <param name="eventName">The event name.</param>
         /// <param name="content">The data content.</param>
         /// <param name="dataType">The data type.</param>
         /// <param name="ackId">The ack-id for the operation. The message with the same ack-id is treated as the same message. Leave it omitted to generate by library.</param>
         /// <param name="optionsBuilder">A set of options used while sending to sever.</param>
         /// <param name="cancellationToken">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
         /// <returns>The ack for the operation</returns>
-        public virtual async Task<AckMessage> SendToServerAsync(BinaryData content, WebPubSubDataType dataType, ulong? ackId = null, Action<SendToServerOptions> optionsBuilder = null, CancellationToken cancellationToken = default)
+        public virtual async Task<AckMessage> SendToServerAsync(string eventName, BinaryData content, WebPubSubDataType dataType, ulong? ackId = null, Action<SendToServerOptions> optionsBuilder = null, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
 
@@ -201,14 +202,14 @@ namespace Azure.Messaging.WebPubSub.Client
 
             if (options.FireAndForget)
             {
-                var message = new SendEventMessage(content, dataType, null);
+                var message = new SendEventMessage(eventName, content, dataType, null);
                 await SendMessageAsync(message, cancellationToken).ConfigureAwait(false);
                 return null;
             }
 
             return await SendMessageWithAckIdAsync(id =>
             {
-                return new SendEventMessage(content, dataType, id);
+                return new SendEventMessage(eventName, content, dataType, id);
             }, ackId, cancellationToken).ConfigureAwait(false);
         }
 

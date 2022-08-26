@@ -350,6 +350,7 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                         {
                             writer.WriteNumber(AckIdPropertyNameBytes, sendEventMessage.AckId.Value);
                         }
+                        writer.WriteString(EventPropertyNameBytes, sendEventMessage.EventName);
                         writer.WriteString(DataTypePropertyNameBytes, sendEventMessage.DataType.ToString());
                         WriteData(writer, sendEventMessage.Data, sendEventMessage.DataType);
                         break;

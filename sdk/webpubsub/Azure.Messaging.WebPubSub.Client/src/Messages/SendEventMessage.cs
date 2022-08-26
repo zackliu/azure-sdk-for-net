@@ -30,13 +30,20 @@ namespace Azure.Messaging.WebPubSub.Client
         public BinaryData Data { get; }
 
         /// <summary>
+        /// The name of custom event
+        /// </summary>
+        public string EventName { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SendEventMessage"/> class.
         /// </summary>
+        /// <param name="eventName">The event name</param>
         /// <param name="data">The data content</param>
         /// <param name="dataType">Type of the data</param>
         /// <param name="ackId">The optional ack-id</param>
-        public SendEventMessage(BinaryData data, WebPubSubDataType dataType, ulong? ackId)
+        public SendEventMessage(string eventName, BinaryData data, WebPubSubDataType dataType, ulong? ackId)
         {
+            EventName = eventName;
             AckId = ackId;
             DataType = dataType;
             Data = data;
