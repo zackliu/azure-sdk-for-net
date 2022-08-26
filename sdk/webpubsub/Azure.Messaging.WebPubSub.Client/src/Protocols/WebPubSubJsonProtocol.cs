@@ -2,15 +2,63 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Text;
 
 namespace Azure.Messaging.WebPubSub.Client.Protocols
 {
-    internal class WebPubSubJsonProtocol : WebPubSubJsonProtocolBase
+    /// <summary>
+    /// The protocol to represent "json.webpubsub.azure.v1"
+    /// </summary>
+    public class WebPubSubJsonProtocol : IWebPubSubProtocol
     {
-        public override string Name => "json.webpubsub.azure.v1";
+        private readonly WebPubSubJsonProtocolBase _processor = new WebPubSubJsonProtocolBase();
 
-        public override bool IsReliableSubProtocol => false;
+        /// <summary>
+        /// Gets the name of the protocol. The name is used by Web PubSub client to resolve the protocol between the client and server.
+        /// </summary>
+        public string Name => "json.webpubsub.azure.v1";
+
+        /// <summary>
+        /// Get whether the protocol using a reliable subprotocl.
+        /// </summary>
+        public bool IsReliableSubProtocol => false;
+
+        /// <summary>
+        /// Get the WebSocketMessageType to be used in websocket bytes
+        /// </summary>
+        public WebSocketMessageType WebSocketMessageType => WebSocketMessageType.Text;
+
+        /// <summary>
+        /// Converts the specified <see cref="WebPubSubMessage"/> to its serialized representation.
+        /// </summary>
+        /// <param name="message">The message to convert.</param>
+        /// <returns>The serialized representation of the message.</returns>
+        public ReadOnlyMemory<byte> GetMessageBytes(WebPubSubMessage message)
+        {
+            return _processor.GetMessageBytes(message);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="WebPubSubMessage"/> from the specified serialized representation。
+        /// </summary>
+        /// <param name="input">The serialized representation of the message.</param>
+        /// <returns>A <see cref="WebPubSubMessage"/></returns>
+        public WebPubSubMessage ParseMessage(ReadOnlySequence<byte> input)
+        {
+            return _processor.ParseMessage(input);
+        }
+
+        /// <summary>
+        /// Writes the specified <see cref="WebPubSubMessage"/> to a writer.
+        /// </summary>
+        /// <param name="message">The message to write.</param>
+        /// <param name="output">The output writer.</param>
+        public void WriteMessage(WebPubSubMessage message, IBufferWriter<byte> output)
+        {
+            _processor.WriteMessage(message, output);
+        }
     }
 }

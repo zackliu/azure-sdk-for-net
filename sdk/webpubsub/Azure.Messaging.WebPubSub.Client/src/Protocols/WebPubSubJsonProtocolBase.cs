@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace Azure.Messaging.WebPubSub.Client.Protocols
 {
-    internal abstract class WebPubSubJsonProtocolBase : IWebPubSubProtocol
+    internal class WebPubSubJsonProtocolBase
     {
         private const string TypePropertyName = "type";
         private static readonly JsonEncodedText TypePropertyNameBytes = JsonEncodedText.Encode(TypePropertyName);
@@ -55,12 +55,6 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
         private static readonly JsonEncodedText SendToGroupTypeBytes = JsonEncodedText.Encode("sendToGroup");
         private static readonly JsonEncodedText SendEventTypeBytes = JsonEncodedText.Encode("event");
         private static readonly JsonEncodedText SequenceAckTypeBytes = JsonEncodedText.Encode("sequenceAck");
-
-        public abstract string Name { get; }
-
-        public abstract bool IsReliableSubProtocol { get; }
-
-        public WebSocketMessageType WebSocketMessageType => WebSocketMessageType.Text;
 
         public ReadOnlyMemory<byte> GetMessageBytes(WebPubSubMessage message)
         {
