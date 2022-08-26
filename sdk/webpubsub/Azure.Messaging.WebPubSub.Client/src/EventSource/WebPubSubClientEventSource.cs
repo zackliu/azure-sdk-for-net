@@ -24,6 +24,10 @@ namespace Azure.Messaging.WebPubSub.Client
         private const int ConnectionStartingId = 3;
         private const int ConnectionClosedId = 4;
         private const int FailedToHandleMessageId = 5;
+        private const int FailedReceivingBytesId = 6;
+        private const int FailedToChangeClientStateId = 7;
+        private const int StopRecoveryId = 8;
+        private const int RecoveryAttemptFailedId = 9;
 
         public static WebPubSubClientEventSource Log { get; } = new WebPubSubClientEventSource();
 
@@ -36,16 +40,16 @@ namespace Azure.Messaging.WebPubSub.Client
             }
         }
 
-        [Event(2, Level = EventLevel.Verbose, Message = "Client state changes to {0}.")]
-        public virtual void ClientStateChanges(WebPubSubClientState state)
+        [Event(2, Level = EventLevel.Informational, Message = "The client state transitent from the '{0}' state to the '{1}' state.")]
+        public virtual void ClientStateChanges(string newState, string currentState)
         {
             if (IsEnabled())
             {
-                WriteEvent(ClientStateChangesId, state.ToString());
+                WriteEvent(ClientStateChangesId, currentState, newState);
             }
         }
 
-        [Event(3, Level = EventLevel.Informational, Message = "Connection start to connect with subprotocol {2}.")]
+        [Event(3, Level = EventLevel.Informational, Message = "Connection start to connect with subprotocol {0}.")]
         public virtual void ConnectionStarting(string subprotocol)
         {
             if (IsEnabled())
@@ -69,6 +73,42 @@ namespace Azure.Messaging.WebPubSub.Client
             if (IsEnabled())
             {
                 WriteEvent(FailedToHandleMessageId, errorMessage);
+            }
+        }
+
+        [Event(6, Level = EventLevel.Informational, Message = "An exception occured while receiving bytes.")]
+        public virtual void FailedReceivingBytes(string errorMessage)
+        {
+            if (IsEnabled())
+            {
+                WriteEvent(FailedReceivingBytesId, errorMessage);
+            }
+        }
+
+        [Event(7, Level = EventLevel.Warning, Message = "The client failed to transition from the '{0}' state to the '{1}' state because it was actually in the '{2}' state.")]
+        public virtual void FailedToChangeClientState(string expectedState, string newState, string currentState)
+        {
+            if (IsEnabled())
+            {
+                WriteEvent(FailedToChangeClientStateId, expectedState, newState, currentState);
+            }
+        }
+
+        [Event(8, Level = EventLevel.Warning, Message = "Stop try to recover the connection with connectionId: {0} cause of {1}.")]
+        public virtual void StopRecovery(string connectionId, string reason)
+        {
+            if (IsEnabled())
+            {
+                WriteEvent(StopRecoveryId, connectionId, reason);
+            }
+        }
+
+        [Event(9, Level = EventLevel.Informational, Message = "An attempt to recover connection with connectionId: {0} failed, will retry later.")]
+        public virtual void RecoveryAttemptFailed(string connectionId, string errorMessage)
+        {
+            if (IsEnabled())
+            {
+                WriteEvent(RecoveryAttemptFailedId, connectionId, errorMessage);
             }
         }
     }

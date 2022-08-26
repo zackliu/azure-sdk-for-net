@@ -20,7 +20,8 @@ namespace Azure.Messaging.WebPubSub.Client
         private readonly SemaphoreSlim _sendLock = new SemaphoreSlim(1);
         private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        private volatile bool _isReceiving;
+        // 0 = not active, 1 = actively receiving
+        private int _isReceiving;
 
         public WebSocketCloseStatus? CloseStatus => _socket.CloseStatus;
 
@@ -47,11 +48,6 @@ namespace Azure.Messaging.WebPubSub.Client
 
         public async Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
         {
-            if (_socket.State != WebSocketState.Open)
-            {
-                throw new SendMessageFailedException("Connection is not in open state");
-            }
-
             await _sendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -65,11 +61,6 @@ namespace Azure.Messaging.WebPubSub.Client
 
         public async Task SendAsync(ReadOnlyMemory<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
         {
-            if (_socket.State != WebSocketState.Open)
-            {
-                throw new SendMessageFailedException("Connection is not in open state");
-            }
-
             await _sendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -83,7 +74,11 @@ namespace Azure.Messaging.WebPubSub.Client
 
         public async Task StartReceive(IMessageHandler messageHandler, CancellationToken token)
         {
-            _isReceiving = true;
+            if (Interlocked.CompareExchange(ref _isReceiving, 1, 0) != 0)
+            {
+                throw new InvalidOperationException("The client is already start receiving");
+            }
+
             using var buffer = new MemoryBufferWriter();
             try
             {
@@ -95,7 +90,11 @@ namespace Azure.Messaging.WebPubSub.Client
 
                     if (type == WebSocketMessageType.Close)
                     {
-                        await _socket.CloseOutputAsync(_socket.CloseStatus ?? WebSocketCloseStatus.EndpointUnavailable, null, default).ConfigureAwait(false);
+                        if (_socket.State == WebSocketState.CloseReceived)
+                        {
+                            await _socket.CloseOutputAsync(_socket.CloseStatus ?? WebSocketCloseStatus.EndpointUnavailable, null, default).ConfigureAwait(false);
+                        }
+
                         return;
                     }
 
@@ -127,11 +126,16 @@ namespace Azure.Messaging.WebPubSub.Client
             }
             finally
             {
-                if (_isReceiving)
+                if (_isReceiving == 1)
                 {
                     await _stoppedTcs.Task.AwaitWithCancellation(token);
                 }
             }
+        }
+
+        internal void Abort()
+        {
+            _socket.Abort();
         }
 
         private static async Task<WebSocketMessageType> ReceiveOneFrameAsync(IBufferWriter<byte> buffer, WebSocket socket, CancellationToken token)

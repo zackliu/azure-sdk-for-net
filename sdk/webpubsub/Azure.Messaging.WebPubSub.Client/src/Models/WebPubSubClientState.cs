@@ -12,6 +12,6 @@ namespace Azure.Messaging.WebPubSub.Client
         Disconnected,
         Connecting,
         Connected,
-        Suspended,
+        Recovering,
     }
 }
