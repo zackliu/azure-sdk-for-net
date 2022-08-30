@@ -11,27 +11,12 @@ namespace Azure.Messaging.WebPubSub.Client
     /// <summary>
     /// The message representing the response from groups.
     /// </summary>
-    public class GroupResponseMessage : WebPubSubMessage
+    public class GroupResponseMessage : DataResponseMessage
     {
         /// <summary>
         /// The group name
         /// </summary>
         public string Group { get; }
-
-        /// <summary>
-        /// Type of the data
-        /// </summary>
-        public WebPubSubDataType DataType { get; }
-
-        /// <summary>
-        /// The data content
-        /// </summary>
-        public BinaryData Data { get; }
-
-        /// <summary>
-        /// The sequence id. Only availble in reliable protocol.
-        /// </summary>
-        public ulong? SequenceId { get; }
 
         /// <summary>
         /// FromUserId
@@ -46,12 +31,9 @@ namespace Azure.Messaging.WebPubSub.Client
         /// <param name="data">The data content</param>
         /// <param name="sequenceId">The sequence id. Only availble in reliable protocol.</param>
         /// <param name="fromUserId">fromUserId.</param>
-        public GroupResponseMessage(string group, WebPubSubDataType dataType, BinaryData data, ulong? sequenceId, string fromUserId)
+        public GroupResponseMessage(string group, WebPubSubDataType dataType, BinaryData data, ulong? sequenceId, string fromUserId) : base(dataType, data, sequenceId)
         {
             Group = group;
-            DataType = dataType;
-            Data = data;
-            SequenceId = sequenceId;
             FromUserId = fromUserId;
         }
     }

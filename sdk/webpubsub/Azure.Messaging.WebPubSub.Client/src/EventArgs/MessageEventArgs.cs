@@ -9,22 +9,22 @@ namespace Azure.Messaging.WebPubSub.Client
     /// <summary>
     /// ServerResponseMessage
     /// </summary>
-    public class ServerMessageEventArgs : SyncAsyncEventArgs
+    public class MessageEventArgs : SyncAsyncEventArgs
     {
         /// <summary>
         /// ServerResponseMessage
         /// </summary>
-        public ServerResponseMessage ServerResponseMessage { get; }
+        public DataResponseMessage Message { get; }
 
         /// <summary>
         /// Ctor
         /// </summary>
-        /// <param name="serverResponseMessage"></param>
+        /// <param name="message"></param>
         /// <param name="isRunningSynchronously"></param>
         /// <param name="cancellationToken"></param>
-        public ServerMessageEventArgs(ServerResponseMessage serverResponseMessage, bool isRunningSynchronously, CancellationToken cancellationToken = default) : base(isRunningSynchronously, cancellationToken)
+        public MessageEventArgs(DataResponseMessage message, bool isRunningSynchronously, CancellationToken cancellationToken = default) : base(isRunningSynchronously, cancellationToken)
         {
-            ServerResponseMessage = serverResponseMessage;
+            Message = message;
         }
     }
 }

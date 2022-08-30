@@ -224,9 +224,9 @@ namespace Azure.Messaging.WebPubSub.Client
         public event SyncAsyncEventHandler<DisconnectedEventArgs> Disconnected;
 
         /// <summary>
-        /// A event triggered when received messages from server.
+        /// A event triggered when received data messages.
         /// </summary>
-        public event SyncAsyncEventHandler<ServerMessageEventArgs> ServerMessageReceived;
+        public event SyncAsyncEventHandler<MessageEventArgs> MessageReceived;
 
         /// <summary>
         /// Dispose and close the client.
@@ -405,9 +405,9 @@ namespace Azure.Messaging.WebPubSub.Client
             }
         }
 
-        private Task RaiseServerMessageReceivedAsync(ServerResponseMessage serverResponseMessage, CancellationToken token)
+        private Task RaiseMessageReceivedAsync(DataResponseMessage dataMessage, CancellationToken token)
         {
-            return ServerMessageReceived.RaiseAsync(new ServerMessageEventArgs(serverResponseMessage, false, token), nameof(ServerMessageEventArgs), nameof(ServerMessageReceived));
+            return MessageReceived.RaiseAsync(new MessageEventArgs(dataMessage, false, token), nameof(MessageEventArgs), nameof(MessageReceived));
         }
 
         private async Task ExecuteAutoReconnection()
@@ -563,6 +563,8 @@ namespace Azure.Messaging.WebPubSub.Client
                 {
                     await group.HandleMessageAsync(groupResponseMessage, token).ConfigureAwait(false);
                 }
+
+                await RaiseMessageReceivedAsync(groupResponseMessage, token).ConfigureAwait(false);
             }
 
             Task HandleServerMessage(ServerResponseMessage serverResponseMessage, CancellationToken token)
@@ -576,7 +578,7 @@ namespace Azure.Messaging.WebPubSub.Client
                     }
                 }
 
-                return RaiseServerMessageReceivedAsync(serverResponseMessage, token);
+                return RaiseMessageReceivedAsync(serverResponseMessage, token);
             }
 
             Task HandleAckMessage(AckMessage ackMessage, CancellationToken _)
