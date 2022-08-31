@@ -56,6 +56,10 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
         private static readonly JsonEncodedText SendEventTypeBytes = JsonEncodedText.Encode("event");
         private static readonly JsonEncodedText SequenceAckTypeBytes = JsonEncodedText.Encode("sequenceAck");
 
+        private const byte Quote = (byte)'"';
+        private const byte KeyValueSeperator = (byte)':';
+        private const byte ListSeparator = (byte)',';
+
         public ReadOnlyMemory<byte> GetMessageBytes(WebPubSubMessage message)
         {
             using var writer = new MemoryBufferWriter();
@@ -342,7 +346,7 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                         }
                         writer.WriteBoolean(NoEchoPropertyNameBytes, sendToGroupMessage.NoEcho);
                         writer.WriteString(DataTypePropertyNameBytes, sendToGroupMessage.DataType.ToString());
-                        WriteData(writer, sendToGroupMessage.Data, sendToGroupMessage.DataType);
+                        WriteData(output, writer, sendToGroupMessage.Data, sendToGroupMessage.DataType);
                         break;
                     case SendEventMessage sendEventMessage:
                         writer.WriteString(TypePropertyNameBytes, SendEventTypeBytes);
@@ -352,7 +356,7 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
                         }
                         writer.WriteString(EventPropertyNameBytes, sendEventMessage.EventName);
                         writer.WriteString(DataTypePropertyNameBytes, sendEventMessage.DataType.ToString());
-                        WriteData(writer, sendEventMessage.Data, sendEventMessage.DataType);
+                        WriteData(output, writer, sendEventMessage.Data, sendEventMessage.DataType);
                         break;
                     case SequenceAckMessage sequenceAckMessage:
                         writer.WriteString(TypePropertyNameBytes, SequenceAckTypeBytes);
@@ -412,13 +416,24 @@ namespace Azure.Messaging.WebPubSub.Client.Protocols
             }
         }
 
-        private static void WriteData(Utf8JsonWriter writer, BinaryData data, WebPubSubDataType dataType)
+        private static void WriteData(IBufferWriter<byte> buffer, Utf8JsonWriter writer, BinaryData data, WebPubSubDataType dataType)
         {
             switch (dataType)
             {
                 case WebPubSubDataType.Text:
-                case WebPubSubDataType.Json:
                     writer.WriteString(DataPropertyNameBytes, data);
+                    break;
+                case WebPubSubDataType.Json:
+                    writer.Flush();
+                    var length = DataPropertyNameBytes.EncodedUtf8Bytes.Length + 4; // ListSeparator + Quota + DataPropertyNameBytes + Quota + KeyValueSeperator
+                    var span = buffer.GetSpan(length);
+                    span[0] = ListSeparator;
+                    span[1] = Quote;
+                    DataPropertyNameBytes.EncodedUtf8Bytes.CopyTo(span[2..]);
+                    span[length - 2] = Quote;
+                    span[length - 1] = KeyValueSeperator;
+                    buffer.Advance(length);
+                    buffer.Write(data.ToMemory().Span);
                     break;
                 case WebPubSubDataType.Binary:
                 case WebPubSubDataType.Protobuf:
