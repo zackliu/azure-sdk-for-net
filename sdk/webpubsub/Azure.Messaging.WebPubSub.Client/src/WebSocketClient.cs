@@ -7,7 +7,6 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core.Pipeline;
-using Azure.Messaging.WebPubSub.Client.Protocols;
 
 namespace Azure.Messaging.WebPubSub.Client
 {

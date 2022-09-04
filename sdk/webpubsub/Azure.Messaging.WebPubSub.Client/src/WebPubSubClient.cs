@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using System.Web;
 using Azure.Core;
 using Azure.Core.Pipeline;
-using Azure.Messaging.WebPubSub.Client.Protocols;
 
 namespace Azure.Messaging.WebPubSub.Client
 {

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 
-namespace Azure.Messaging.WebPubSub.Client.Protocols
+namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
     /// The protocol to represent "json.webpubsub.azure.v1"
