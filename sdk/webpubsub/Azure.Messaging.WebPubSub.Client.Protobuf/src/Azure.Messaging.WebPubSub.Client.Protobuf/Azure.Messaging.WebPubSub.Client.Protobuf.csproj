@@ -25,6 +25,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Azure.Messaging.WebPubSub.Client\src\Azure.Messaging.WebPubSub.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Protobuf Include="Protos\webpubsub.client.proto" GrpcServices="Server" />
   </ItemGroup>
   
