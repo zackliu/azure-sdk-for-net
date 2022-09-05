@@ -116,11 +116,11 @@ namespace Azure.Messaging.WebPubSub.Client
             }
         }
 
-        internal async Task HandleMessageAsync(GroupResponseMessage message, CancellationToken token)
+        internal async Task HandleMessageAsync(GroupDataMessage message, CancellationToken token)
         {
             try
             {
-                await MessageReceived.RaiseAsync(new GroupMessageEventArgs(message, false, token), nameof(GroupResponseMessage), nameof(MessageReceived)).ConfigureAwait(false);
+                await MessageReceived.RaiseAsync(new GroupMessageEventArgs(message, false, token), nameof(GroupDataMessage), nameof(MessageReceived)).ConfigureAwait(false);
             }
             catch
             {

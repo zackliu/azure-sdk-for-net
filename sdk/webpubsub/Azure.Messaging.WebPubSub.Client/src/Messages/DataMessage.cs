@@ -9,9 +9,9 @@ using System.Text;
 namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
-    /// The message representing the response from server.
+    /// The message representing the data from groups or from servers
     /// </summary>
-    public abstract class DataResponseMessage : WebPubSubMessage
+    public abstract class DataMessage : WebPubSubMessage
     {
         /// <summary>
         /// Type of the data
@@ -29,12 +29,12 @@ namespace Azure.Messaging.WebPubSub.Client
         public ulong? SequenceId { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataResponseMessage"/> class.
+        /// Initializes a new instance of the <see cref="DataMessage"/> class.
         /// </summary>
         /// <param name="dataType">Type of the data</param>
         /// <param name="data">The data content</param>
         /// <param name="sequenceId">The sequence id. Only availble in reliable protocol.</param>
-        protected DataResponseMessage(WebPubSubDataType dataType, BinaryData data, ulong? sequenceId)
+        protected DataMessage(WebPubSubDataType dataType, BinaryData data, ulong? sequenceId)
         {
             DataType = dataType;
             Data = data;

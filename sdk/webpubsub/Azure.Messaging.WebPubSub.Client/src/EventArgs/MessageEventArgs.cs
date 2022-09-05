@@ -2,29 +2,22 @@
 // Licensed under the MIT License.
 
 using System.Threading;
-using Azure.Messaging.WebPubSub.Client.Protocols;
 
 namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
-    /// ServerResponseMessage
+    /// The event args for message from server or groups
     /// </summary>
     public class MessageEventArgs : SyncAsyncEventArgs
     {
         /// <summary>
-        /// ServerResponseMessage
+        /// The data message
         /// </summary>
-        public DataResponseMessage Message { get; }
+        public DataMessage DataMessage { get; }
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="isRunningSynchronously"></param>
-        /// <param name="cancellationToken"></param>
-        public MessageEventArgs(DataResponseMessage message, bool isRunningSynchronously, CancellationToken cancellationToken = default) : base(isRunningSynchronously, cancellationToken)
+        internal MessageEventArgs(DataMessage message, bool isRunningSynchronously, CancellationToken cancellationToken = default) : base(isRunningSynchronously, cancellationToken)
         {
-            Message = message;
+            DataMessage = message;
         }
     }
 }

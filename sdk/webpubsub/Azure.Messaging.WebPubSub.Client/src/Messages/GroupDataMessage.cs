@@ -9,9 +9,9 @@ using System.Text;
 namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
-    /// The message representing the response from groups.
+    /// The message representing the data from groups.
     /// </summary>
-    public class GroupResponseMessage : DataResponseMessage
+    public class GroupDataMessage : DataMessage
     {
         /// <summary>
         /// The group name
@@ -24,14 +24,14 @@ namespace Azure.Messaging.WebPubSub.Client
         public string FromUserId { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupResponseMessage"/> class.
+        /// Initializes a new instance of the <see cref="GroupDataMessage"/> class.
         /// </summary>
         /// <param name="group">The group name</param>
         /// <param name="dataType">Type of the data</param>
         /// <param name="data">The data content</param>
         /// <param name="sequenceId">The sequence id. Only availble in reliable protocol.</param>
         /// <param name="fromUserId">fromUserId.</param>
-        public GroupResponseMessage(string group, WebPubSubDataType dataType, BinaryData data, ulong? sequenceId, string fromUserId) : base(dataType, data, sequenceId)
+        public GroupDataMessage(string group, WebPubSubDataType dataType, BinaryData data, ulong? sequenceId, string fromUserId) : base(dataType, data, sequenceId)
         {
             Group = group;
             FromUserId = fromUserId;

@@ -7,10 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.Messaging.WebPubSub.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.Messaging.WebPubSub.Client.Tests", "tests\Azure.Messaging.WebPubSub.Client.Tests.csproj", "{0B6AAD06-F541-4931-A661-16BE3BE24EEF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelloWorld", "samples\HelloWorld\HelloWorld.csproj", "{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azure.Messaging.WebPubSub.Client.Protobuf", "..\Azure.Messaging.WebPubSub.Client.Protobuf\src\Azure.Messaging.WebPubSub.Client.Protobuf\Azure.Messaging.WebPubSub.Client.Protobuf.csproj", "{A4D6B2B9-C935-44BC-8185-E63B93208114}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,30 +41,6 @@ Global
 		{0B6AAD06-F541-4931-A661-16BE3BE24EEF}.Release|x64.Build.0 = Release|Any CPU
 		{0B6AAD06-F541-4931-A661-16BE3BE24EEF}.Release|x86.ActiveCfg = Release|Any CPU
 		{0B6AAD06-F541-4931-A661-16BE3BE24EEF}.Release|x86.Build.0 = Release|Any CPU
-		{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}.Debug|x64.Build.0 = Debug|Any CPU
-		{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}.Debug|x86.Build.0 = Debug|Any CPU
-		{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}.Release|x64.ActiveCfg = Release|Any CPU
-		{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}.Release|x64.Build.0 = Release|Any CPU
-		{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}.Release|x86.ActiveCfg = Release|Any CPU
-		{FEA104EF-233F-4EE8-A4A9-ED0C9501121E}.Release|x86.Build.0 = Release|Any CPU
-		{A4D6B2B9-C935-44BC-8185-E63B93208114}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A4D6B2B9-C935-44BC-8185-E63B93208114}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A4D6B2B9-C935-44BC-8185-E63B93208114}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{A4D6B2B9-C935-44BC-8185-E63B93208114}.Debug|x64.Build.0 = Debug|Any CPU
-		{A4D6B2B9-C935-44BC-8185-E63B93208114}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A4D6B2B9-C935-44BC-8185-E63B93208114}.Debug|x86.Build.0 = Debug|Any CPU
-		{A4D6B2B9-C935-44BC-8185-E63B93208114}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A4D6B2B9-C935-44BC-8185-E63B93208114}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A4D6B2B9-C935-44BC-8185-E63B93208114}.Release|x64.ActiveCfg = Release|Any CPU
-		{A4D6B2B9-C935-44BC-8185-E63B93208114}.Release|x64.Build.0 = Release|Any CPU
-		{A4D6B2B9-C935-44BC-8185-E63B93208114}.Release|x86.ActiveCfg = Release|Any CPU
-		{A4D6B2B9-C935-44BC-8185-E63B93208114}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

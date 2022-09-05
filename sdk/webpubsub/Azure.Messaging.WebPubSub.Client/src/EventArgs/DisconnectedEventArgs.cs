@@ -2,27 +2,20 @@
 // Licensed under the MIT License.
 
 using System.Threading;
-using Azure.Messaging.WebPubSub.Client.Protocols;
 
 namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
-    /// DisconnectedEventArgs
+    /// The event args for disconnected
     /// </summary>
     public class DisconnectedEventArgs : SyncAsyncEventArgs
     {
         /// <summary>
-        /// DisconnectedMessage
+        /// The disconnected message
         /// </summary>
         public DisconnectedMessage DisconnectedMessage { get; }
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="disconnectedMessage"></param>
-        /// <param name="isRunningSynchronously"></param>
-        /// <param name="cancellationToken"></param>
-        public DisconnectedEventArgs(DisconnectedMessage disconnectedMessage, bool isRunningSynchronously, CancellationToken cancellationToken = default) : base(isRunningSynchronously, cancellationToken)
+        internal DisconnectedEventArgs(DisconnectedMessage disconnectedMessage, bool isRunningSynchronously, CancellationToken cancellationToken = default) : base(isRunningSynchronously, cancellationToken)
         {
             DisconnectedMessage = disconnectedMessage;
         }

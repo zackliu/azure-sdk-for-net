@@ -404,7 +404,7 @@ namespace Azure.Messaging.WebPubSub.Client
             }
         }
 
-        private Task RaiseMessageReceivedAsync(DataResponseMessage dataMessage, CancellationToken token)
+        private Task RaiseMessageReceivedAsync(DataMessage dataMessage, CancellationToken token)
         {
             return MessageReceived.RaiseAsync(new MessageEventArgs(dataMessage, false, token), nameof(MessageEventArgs), nameof(MessageReceived));
         }
@@ -516,10 +516,10 @@ namespace Azure.Messaging.WebPubSub.Client
                 case DisconnectedMessage disconnectedMessage:
                     await HandleDisconnectedMessage(disconnectedMessage, token).ConfigureAwait(false);
                     break;
-                case GroupResponseMessage groupResponseMessage:
+                case GroupDataMessage groupResponseMessage:
                     await HandleGroupMessage(groupResponseMessage, token).ConfigureAwait(false);
                     break;
-                case ServerResponseMessage serverResponseMessage:
+                case ServerDataMessage serverResponseMessage:
                     await HandleServerMessage(serverResponseMessage, token).ConfigureAwait(false);
                     break;
                 case AckMessage ackMessage:
@@ -547,7 +547,7 @@ namespace Azure.Messaging.WebPubSub.Client
                 return Task.CompletedTask;
             }
 
-            async Task HandleGroupMessage(GroupResponseMessage groupResponseMessage, CancellationToken token)
+            async Task HandleGroupMessage(GroupDataMessage groupResponseMessage, CancellationToken token)
             {
                 if (groupResponseMessage.SequenceId != null)
                 {
@@ -566,7 +566,7 @@ namespace Azure.Messaging.WebPubSub.Client
                 await RaiseMessageReceivedAsync(groupResponseMessage, token).ConfigureAwait(false);
             }
 
-            Task HandleServerMessage(ServerResponseMessage serverResponseMessage, CancellationToken token)
+            Task HandleServerMessage(ServerDataMessage serverResponseMessage, CancellationToken token)
             {
                 if (serverResponseMessage.SequenceId != null)
                 {

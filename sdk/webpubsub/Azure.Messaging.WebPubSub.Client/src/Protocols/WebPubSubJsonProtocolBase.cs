@@ -273,10 +273,10 @@ namespace Azure.Messaging.WebPubSub.Client
                         switch (fromType)
                         {
                             case FromType.Server:
-                                return new ServerResponseMessage(dataType, data, sequenceId);
+                                return new ServerDataMessage(dataType, data, sequenceId);
                             case FromType.Group:
                                 AssertNotNull(group, GroupPropertyName);
-                                return new GroupResponseMessage(group, dataType, data, sequenceId, fromUserId);
+                                return new GroupDataMessage(group, dataType, data, sequenceId, fromUserId);
                             default:
                                 throw new InvalidDataException($"Unsupported from {fromType}");
                         }

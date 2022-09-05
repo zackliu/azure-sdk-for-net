@@ -10,7 +10,7 @@ using Azure.Core;
 namespace Azure.Messaging.WebPubSub.Client
 {
     /// <summary>
-    /// The message representing sending event.
+    /// The message representing sending event to server.
     /// </summary>
     public class SendEventMessage : WebPubSubMessage
     {
