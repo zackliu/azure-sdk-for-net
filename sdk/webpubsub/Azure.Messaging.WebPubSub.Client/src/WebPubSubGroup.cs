@@ -34,7 +34,7 @@ namespace Azure.Messaging.WebPubSub.Clients
         /// </summary>
         public event SyncAsyncEventHandler<GroupMessageEventArgs> MessageReceived;
 
-        internal async Task HandleMessageAsync(GroupDataMessage message, CancellationToken token)
+        internal async Task SafeHandleMessageAsync(GroupDataMessage message, CancellationToken token)
         {
             try
             {

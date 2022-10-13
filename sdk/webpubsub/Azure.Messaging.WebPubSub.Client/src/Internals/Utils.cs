@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using Azure.Core;
 
 namespace Azure.Messaging.WebPubSub.Clients
@@ -16,6 +17,11 @@ namespace Azure.Messaging.WebPubSub.Clients
             return (RetryOptions)typeof(RetryOptions).GetConstructor(
                   BindingFlags.NonPublic | BindingFlags.Instance,
                   null, Type.EmptyTypes, null).Invoke(null);
+        }
+
+        internal static void FireAndForget(this Task task)
+        {
+            _ = Task.Run(() => task);
         }
     }
 }

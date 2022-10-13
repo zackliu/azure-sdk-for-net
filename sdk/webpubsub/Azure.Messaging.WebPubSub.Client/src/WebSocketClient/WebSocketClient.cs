@@ -10,26 +10,24 @@ using Azure.Core.Pipeline;
 
 namespace Azure.Messaging.WebPubSub.Clients
 {
-    internal sealed class WebSocketClient : IDisposable
+    internal sealed partial class WebSocketClient : IWebSocketClient
     {
         private readonly ClientWebSocket _socket;
         private readonly Uri _uri;
-        private readonly WebPubSubProtocol _protocol;
+        private readonly string _protocol;
+        private readonly MemoryBufferWriter _buffer;
 
         private readonly SemaphoreSlim _sendLock = new SemaphoreSlim(1);
-        private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        // 0 = not active, 1 = actively receiving
-        private int _isReceiving;
 
         public WebSocketCloseStatus? CloseStatus => _socket.CloseStatus;
 
-        public WebSocketClient(Uri uri, WebPubSubProtocol protocol)
+        public WebSocketClient(Uri uri, string protocol)
         {
             _protocol = protocol;
             _socket = new ClientWebSocket();
-            _socket.Options.AddSubProtocol(_protocol.Name);
+            _socket.Options.AddSubProtocol(_protocol);
             _uri = uri;
+            _buffer = new MemoryBufferWriter();
         }
 
         public void Dispose()
@@ -40,7 +38,7 @@ namespace Azure.Messaging.WebPubSub.Clients
 
         public async Task ConnectAsync(CancellationToken token)
         {
-            WebPubSubClientEventSource.Log.ConnectionStarting(_protocol.Name);
+            WebPubSubClientEventSource.Log.ConnectionStarting(_protocol);
 
             await _socket.ConnectAsync(_uri, token).ConfigureAwait(false);
         }
@@ -71,65 +69,37 @@ namespace Azure.Messaging.WebPubSub.Clients
             }
         }
 
-        public async Task StartReceive(IMessageHandler messageHandler, CancellationToken token)
+        public async Task<WebSocketReadResult> ReceiveOneFrameAsync(CancellationToken token)
         {
-            if (Interlocked.CompareExchange(ref _isReceiving, 1, 0) != 0)
+            token.ThrowIfCancellationRequested();
+
+            if (_socket.State == WebSocketState.Closed)
             {
-                throw new InvalidOperationException("The client is already start receiving");
+                return new WebSocketReadResult(default, true);
             }
 
-            using var buffer = new MemoryBufferWriter();
-            try
+            _buffer.Reset();
+            var type = await ReceiveOneFrameAsync(_buffer, _socket, token).ConfigureAwait(false);
+            if (type == WebSocketMessageType.Close)
             {
-                while (_socket.State == WebSocketState.Open && !token.IsCancellationRequested)
+                if (_socket.State == WebSocketState.CloseReceived)
                 {
-                    buffer.Reset();
-
-                    var type = await ReceiveOneFrameAsync(buffer, _socket, token).ConfigureAwait(false);
-
-                    if (type == WebSocketMessageType.Close)
+                    try
                     {
-                        if (_socket.State == WebSocketState.CloseReceived)
-                        {
-                            await _socket.CloseOutputAsync(_socket.CloseStatus ?? WebSocketCloseStatus.EndpointUnavailable, null, default).ConfigureAwait(false);
-                        }
-
-                        return;
+                        await _socket.CloseOutputAsync(_socket.CloseStatus ?? WebSocketCloseStatus.EndpointUnavailable, null, default).ConfigureAwait(false);
                     }
-
-                    if (buffer.Length != 0)
-                    {
-                        try
-                        {
-                            var message = _protocol.ParseMessage(buffer.AsReadOnlySequence());
-                            await messageHandler.HandleMessageAsync(message, token).ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            WebPubSubClientEventSource.Log.FailedToHandleMessage(ex.Message);
-                        }
-                    }
+                    catch { }
                 }
+
+                return new WebSocketReadResult(default, true);
             }
-            finally
-            {
-                _stoppedTcs.SetResult(true);
-            }
+
+            return new WebSocketReadResult(_buffer.AsReadOnlySequence());
         }
 
         public async Task StopAsync(CancellationToken token)
         {
-            try
-            {
-                await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, token).ConfigureAwait(false);
-            }
-            finally
-            {
-                if (_isReceiving == 1)
-                {
-                    await _stoppedTcs.Task.AwaitWithCancellation(token);
-                }
-            }
+            await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, token).ConfigureAwait(false);
         }
 
         internal void Abort()

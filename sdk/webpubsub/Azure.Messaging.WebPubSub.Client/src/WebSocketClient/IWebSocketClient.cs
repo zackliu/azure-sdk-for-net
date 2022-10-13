@@ -1,0 +1,25 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Sockets;
+using System.Net.WebSockets;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+
+namespace Azure.Messaging.WebPubSub.Clients
+{
+    internal interface IWebSocketClient : IDisposable
+    {
+        WebSocketCloseStatus? CloseStatus { get; }
+
+        Task ConnectAsync(CancellationToken token);
+
+        Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken);
+
+        Task SendAsync(ReadOnlyMemory<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken);
+
+        Task<WebSocketReadResult> ReceiveOneFrameAsync(CancellationToken token);
+
+        Task StopAsync(CancellationToken token);
+    }
+}
