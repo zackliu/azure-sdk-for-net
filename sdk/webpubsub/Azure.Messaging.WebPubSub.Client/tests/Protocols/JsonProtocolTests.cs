@@ -7,10 +7,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Messaging.WebPubSub.Clients;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Azure.Messaging.WebPubSub.Clients.Tests.Protocols
+namespace Azure.Messaging.WebPubSub.Client.Tests.Protocols
 {
     public class JsonProtocolTests
     {

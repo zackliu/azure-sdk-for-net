@@ -34,6 +34,7 @@ namespace Azure.Messaging.WebPubSub.Clients
         {
             _sendLock.Dispose();
             _socket.Dispose();
+            _buffer.Dispose();
         }
 
         public async Task ConnectAsync(CancellationToken token)
