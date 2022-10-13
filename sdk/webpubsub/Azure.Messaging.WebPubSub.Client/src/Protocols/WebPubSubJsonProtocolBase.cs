@@ -350,11 +350,11 @@ namespace Azure.Messaging.WebPubSub.Clients
                         break;
                     case SendEventMessage sendEventMessage:
                         writer.WriteString(TypePropertyNameBytes, SendEventTypeBytes);
+                        writer.WriteString(EventPropertyNameBytes, sendEventMessage.EventName);
                         if (sendEventMessage.AckId != null)
                         {
                             writer.WriteNumber(AckIdPropertyNameBytes, sendEventMessage.AckId.Value);
                         }
-                        writer.WriteString(EventPropertyNameBytes, sendEventMessage.EventName);
                         writer.WriteString(DataTypePropertyNameBytes, sendEventMessage.DataType.ToString());
                         WriteData(output, writer, sendEventMessage.Data, sendEventMessage.DataType);
                         break;

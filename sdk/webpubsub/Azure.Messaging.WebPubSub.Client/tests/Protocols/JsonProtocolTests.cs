@@ -19,7 +19,7 @@ namespace Azure.Messaging.WebPubSub.Clients.Tests.Protocols
             public string Value { get; set; }
         }
 
-        public static IEnumerable<object[]> GetTestData()
+        public static IEnumerable<object[]> GetParsingTestData()
         {
             static object[] GetData(object jsonPayload, Action<WebPubSubMessage> assert)
             {
@@ -122,13 +122,56 @@ namespace Azure.Messaging.WebPubSub.Clients.Tests.Protocols
             });
         }
 
-        [MemberData(nameof(GetTestData))]
+        public static IEnumerable<object[]> GetSerializingTestData()
+        {
+            static object[] GetData(WebPubSubMessage message, object json)
+            {
+                return new object[] { message, JsonSerializer.Serialize(json)};
+            }
+
+            yield return GetData(new JoinGroupMessage("group", null), new { type = "joinGroup", group = "group" });
+            yield return GetData(new JoinGroupMessage("group", 738476327894u), new { type = "joinGroup", group = "group", ackId = 738476327894u });
+            yield return GetData(new LeaveGroupMessage("group", null), new { type = "leaveGroup", group = "group" });
+            yield return GetData(new LeaveGroupMessage("group", 738476327894u), new { type = "leaveGroup", group = "group", ackId = 738476327894u });
+            yield return GetData(new SendToGroupMessage("group", BinaryData.FromString("xzy"), WebPubSubDataType.Text, null, false), new { type = "sendToGroup", group = "group", noEcho = false, dataType = "Text", data = "xzy" });
+            yield return GetData(new SendToGroupMessage("group", BinaryData.FromObjectAsJson(new JsonData { Value = "xyz"}), WebPubSubDataType.Json, 738476327894u, true), new { type = "sendToGroup", group = "group", ackId = 738476327894u, noEcho = true, dataType = "Json", data = new { Value = "xyz" } });
+            yield return GetData(new SendToGroupMessage("group", BinaryData.FromBytes(Convert.FromBase64String("eHl6")), WebPubSubDataType.Binary, 738476327894u, true), new { type = "sendToGroup", group = "group", ackId = 738476327894u, noEcho = true, dataType = "Binary", data = "eHl6" });
+            yield return GetData(new SendToGroupMessage("group", BinaryData.FromBytes(Convert.FromBase64String("eHl6")), WebPubSubDataType.Protobuf, 738476327894u, true), new { type = "sendToGroup", group = "group", ackId = 738476327894u, noEcho = true, dataType = "Protobuf", data = "eHl6" });
+            yield return GetData(new SendEventMessage("event", BinaryData.FromString("xzy"), WebPubSubDataType.Text, null), new { type = "event", @event = "event", dataType = "Text", data = "xzy" });
+            yield return GetData(new SendEventMessage("event", BinaryData.FromObjectAsJson(new JsonData { Value = "xyz" }), WebPubSubDataType.Json, 738476327894u), new { type = "event", @event = "event", ackId = 738476327894u,dataType = "Json", data = new { Value = "xyz" } });
+            yield return GetData(new SendEventMessage("event", BinaryData.FromBytes(Convert.FromBase64String("eHl6")), WebPubSubDataType.Binary, 738476327894u), new { type = "event", @event = "event", ackId = 738476327894u, dataType = "Binary", data = "eHl6" });
+            yield return GetData(new SendEventMessage("event", BinaryData.FromBytes(Convert.FromBase64String("eHl6")), WebPubSubDataType.Protobuf, 738476327894u), new { type = "event", @event = "event", ackId = 738476327894u, dataType = "Protobuf", data = "eHl6" });
+            yield return GetData(new SequenceAckMessage(123), new { type = "sequenceAck", sequenceId = 123 });
+            yield return GetData(new SequenceAckMessage(738476327894u), new { type = "sequenceAck", sequenceId = 738476327894u });
+        }
+
+        [MemberData(nameof(GetParsingTestData))]
         [Theory]
         public void ParseMessageTest(byte[] payload, Action<WebPubSubMessage> messageAssert)
         {
             var protocol = new WebPubSubJsonProtocol();
             var resolvedMessage = protocol.ParseMessage(new ReadOnlySequence<byte>(payload));
             messageAssert(resolvedMessage);
+        }
+
+        [MemberData(nameof(GetSerializingTestData))]
+        [Theory]
+        public void SerializeMessageTest(WebPubSubMessage message, string serializedPayload)
+        {
+            var protocol = new WebPubSubJsonProtocol();
+            Assert.Equal(serializedPayload, Encoding.UTF8.GetString(protocol.GetMessageBytes(message).ToArray()));
+        }
+
+        [Fact]
+        public void ProtocolPropertyTest()
+        {
+            var jsonProtocol = new WebPubSubJsonProtocol();
+            Assert.False(jsonProtocol.IsReliable);
+            Assert.Equal("json.webpubsub.azure.v1", jsonProtocol.Name);
+
+            var jsonReliableProtocol = new WebPubSubJsonReliableProtocol();
+            Assert.True(jsonReliableProtocol.IsReliable);
+            Assert.Equal("json.reliable.webpubsub.azure.v1", jsonReliableProtocol.Name);
         }
     }
 }
