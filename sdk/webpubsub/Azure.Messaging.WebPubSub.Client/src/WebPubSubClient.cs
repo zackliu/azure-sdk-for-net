@@ -141,19 +141,39 @@ namespace Azure.Messaging.WebPubSub.Clients
         /// </summary>
         /// <param name="cancellationToken">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
         /// <returns></returns>
-        public virtual Task StartAsync(CancellationToken cancellationToken = default)
+        public virtual async Task StartAsync(CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
 
-            if (_clientState.CurrentState != WebPubSubClientState.Stopped)
+            if (_stoppedCts.IsCancellationRequested)
             {
-                throw new InvalidOperationException("Client can be only started when the state is Stopped");
+                throw new InvalidOperationException("Can not start a client during stopping");
             }
 
-            return StartAsyncCore(cancellationToken);
+            await _connectionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (_clientState.CurrentState != WebPubSubClientState.Stopped)
+                {
+                    throw new InvalidOperationException("Client can be only started when the state is Stopped");
+                }
+
+                try
+                {
+                    await StartAsyncCore(cancellationToken).ConfigureAwait(false);
+                }
+                catch
+                {
+                    _clientState.ChangeState(WebPubSubClientState.Stopped);
+                }
+            }
+            finally
+            {
+                _connectionLock.Release();
+            }
         }
 
-        private async Task StartAsyncCore(CancellationToken cancellationToken)
+        private async Task StartAsyncByReconnection(CancellationToken cancellationToken)
         {
             if (_stoppedCts.IsCancellationRequested)
             {
@@ -163,39 +183,42 @@ namespace Azure.Messaging.WebPubSub.Clients
             await _connectionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                if (_clientState.CurrentState != WebPubSubClientState.Stopped &&
-                    _clientState.CurrentState != WebPubSubClientState.Disconnected)
+                if (_clientState.CurrentState != WebPubSubClientState.Disconnected)
                 {
-                    throw new InvalidOperationException("Client can be only started when the state is Stopped or Disconnected");
+                    throw new InvalidOperationException("Client restart should happen only when the state is Disconnected");
                 }
-
-                _clientState.ChangeState(WebPubSubClientState.Connecting);
-                WebPubSubClientEventSource.Log.ClientStarting();
 
                 try
                 {
-                    // Reset before new connection.
-                    _sequenceId.Reset();
-                    _isInitialConnected = false;
-                    _latestDisconnectedMessage = null;
-                    _reconnectionToken = null;
-                    _connectionId = null;
-                    _ackCache.Clear();
-
-                    var uri = await _webPubSubClientCredential.GetClientAccessUriAsync(cancellationToken).ConfigureAwait(false);
-                    _connnectionEndpoint = ParseClientAccessUri(uri);
-                    await ConnectCoreAsync(_connnectionEndpoint.FullEndpointUrl, cancellationToken).ConfigureAwait(false);
+                    await StartAsyncCore(cancellationToken).ConfigureAwait(false);
                 }
                 catch
                 {
-                    _clientState.ChangeState(WebPubSubClientState.Stopped);
-                    throw;
+                    _clientState.ChangeState(WebPubSubClientState.Disconnected);
                 }
             }
             finally
             {
                 _connectionLock.Release();
             }
+        }
+
+        private async Task StartAsyncCore(CancellationToken cancellationToken)
+        {
+            _clientState.ChangeState(WebPubSubClientState.Connecting);
+            WebPubSubClientEventSource.Log.ClientStarting();
+
+            // Reset before new connection.
+            _sequenceId.Reset();
+            _isInitialConnected = false;
+            _latestDisconnectedMessage = null;
+            _reconnectionToken = null;
+            _connectionId = null;
+            _ackCache.Clear();
+
+            var uri = await _webPubSubClientCredential.GetClientAccessUriAsync(cancellationToken).ConfigureAwait(false);
+            _connnectionEndpoint = ParseClientAccessUri(uri);
+            await ConnectAsync(_connnectionEndpoint.FullEndpointUrl, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -306,6 +329,28 @@ namespace Azure.Messaging.WebPubSub.Clients
         }
 
         /// <summary>
+        /// Join the target group.
+        /// </summary>
+        /// <param name="group">The group name.</param>
+        /// <param name="handler">The handler for group messages.</param>
+        /// <param name="ackId">An optional ack id. It's generated by SDK if not assigned.</param>
+        /// <param name="cancellationToken">An optional <see cref="CancellationToken" /> instance to signal the request to cancel the operation.</param>
+        /// <returns>The ack for the operation.</returns>
+        public virtual async Task<WebPubSubResult> JoinGroupAsync(string group, SyncAsyncEventHandler<GroupMessageEventArgs> handler, ulong? ackId = null, CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+
+            var groupEntity = _groups.GetOrAdd(group, n => new WebPubSubGroup(n));
+            var ack = await SendMessageWithAckAsync(id =>
+            {
+                return new JoinGroupMessage(group, id);
+            }, ackId, cancellationToken).ConfigureAwait(false);
+            groupEntity.IsJoined = true;
+            groupEntity.MessageReceived += handler;
+            return ack;
+        }
+
+        /// <summary>
         /// Leave the target group.
         /// </summary>
         /// <param name="group">The group name.</param>
@@ -322,6 +367,7 @@ namespace Azure.Messaging.WebPubSub.Clients
                 return new LeaveGroupMessage(group, id);
             }, ackId, cancellationToken).ConfigureAwait(false);
             groupEntity.IsJoined = false;
+            groupEntity.ClearMessageReceivedEvents();
             return ack;
         }
 
@@ -403,16 +449,7 @@ namespace Azure.Messaging.WebPubSub.Clients
         /// <summary>
         /// A event triggered when received group data messages.
         /// </summary>
-        private event SyncAsyncEventHandler<GroupMessageEventArgs> _groupMessageReceived;
-
-        /// <summary>
-        /// A event triggered when received group data messages.
-        /// </summary>
-        public virtual IDisposable GroupMessageReceived(SyncAsyncEventHandler<GroupMessageEventArgs> handler)
-        {
-            _groupMessageReceived += handler;
-            return new DisposableEvent(() => _groupMessageReceived -= handler);
-        }
+        public event SyncAsyncEventHandler<GroupMessageEventArgs> GroupMessageReceived;
 
         /// <summary>
         /// A event triggered when received specific group data messages.
@@ -420,7 +457,7 @@ namespace Azure.Messaging.WebPubSub.Clients
         /// <param name="group">The group name</param>
         /// <param name="handler">The message handler</param>
         /// <returns></returns>
-        public virtual IDisposable GroupMessageReceived(string group, SyncAsyncEventHandler<GroupMessageEventArgs> handler)
+        private IDisposable GroupMessageReceivedInternal(string group, SyncAsyncEventHandler<GroupMessageEventArgs> handler)
         {
             var groupEntity = _groups.GetOrAdd(group, n => new WebPubSubGroup(n));
             groupEntity.MessageReceived += handler;
@@ -428,7 +465,7 @@ namespace Azure.Messaging.WebPubSub.Clients
         }
 
         // This method is in a semaphore, DON'T make it endless.
-        private async Task ConnectCoreAsync(Uri uri, CancellationToken token)
+        private async Task ConnectAsync(Uri uri, CancellationToken token)
         {
             var client = WebSocketClientFactory.CreateWebSocketClient(uri, _protocol.Name);
 
@@ -603,7 +640,7 @@ namespace Azure.Messaging.WebPubSub.Clients
         {
             try
             {
-                await _groupMessageReceived.RaiseAsync(new GroupMessageEventArgs(message, false, token), nameof(GroupMessageEventArgs), nameof(GroupMessageEventArgs)).ConfigureAwait(false);
+                await GroupMessageReceived.RaiseAsync(new GroupMessageEventArgs(message, false, token), nameof(GroupMessageEventArgs), nameof(GroupMessageEventArgs)).ConfigureAwait(false);
             }
             catch
             {
@@ -623,7 +660,7 @@ namespace Azure.Messaging.WebPubSub.Clients
 
         private async Task AutoReconnectAsync(CancellationToken token)
         {
-            var stopped = true;
+            var isSuccess = false;
             var retryAttempt = 0;
             try
             {
@@ -631,8 +668,8 @@ namespace Azure.Messaging.WebPubSub.Clients
                 {
                     try
                     {
-                        await StartAsyncCore(token).ConfigureAwait(false);
-                        stopped = false;
+                        await StartAsyncByReconnection(token).ConfigureAwait(false);
+                        isSuccess = true;
                         return;
                     }
                     catch
@@ -651,7 +688,7 @@ namespace Azure.Messaging.WebPubSub.Clients
             }
             finally
             {
-                if (stopped)
+                if (!isSuccess)
                 {
                     HandleClientStopped();
                 }
@@ -702,6 +739,7 @@ namespace Azure.Messaging.WebPubSub.Clients
             }
 
             // Totally timeout 30s as service will remove the connection if it's not recovered in 30s
+            var recovered = false;
             _clientState.ChangeState(WebPubSubClientState.Recovering);
             var cts = new CancellationTokenSource(30 * 1000);
             var linkedTcs = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, token);
@@ -714,7 +752,8 @@ namespace Azure.Messaging.WebPubSub.Clients
                         await _connectionLock.WaitAsync(linkedTcs.Token).ConfigureAwait(false);
                         try
                         {
-                            await ConnectCoreAsync(uri, CancellationToken.None).ConfigureAwait(false);
+                            await ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
+                            recovered = true;
                             return;
                         }
                         finally
@@ -729,16 +768,16 @@ namespace Azure.Messaging.WebPubSub.Clients
                     }
                 }
             }
-            catch
-            {
-                WebPubSubClientEventSource.Log.StopRecovery(_connectionId, "Recovery attempts failed more then 30 seconds or the client is stopped");
-                await HandleConnectionCloseAndNoRecovery(_latestDisconnectedMessage, token).ConfigureAwait(false);
-                return;
-            }
             finally
             {
                 cts.Dispose();
                 linkedTcs.Dispose();
+
+                if (!recovered)
+                {
+                    WebPubSubClientEventSource.Log.StopRecovery(_connectionId, "Recovery attempts failed more then 30 seconds or the client is stopped");
+                    await HandleConnectionCloseAndNoRecovery(_latestDisconnectedMessage, token).ConfigureAwait(false);
+                }
             }
         }
 

@@ -29,7 +29,7 @@ namespace HelloWorld
                 Console.WriteLine($"Receive message: {e.Message.Data}");
                 return Task.CompletedTask;
             });
-            client.GroupMessageReceived(e =>
+            client.GroupMessageReceived += new(e =>
             {
                 Console.WriteLine($"Receive group message from {e.Message.Group}: {e.Message.Data}");
                 return Task.CompletedTask;
@@ -37,6 +37,7 @@ namespace HelloWorld
             
             await client.StartAsync();
 
+            await client.JoinGroupAsync("group1");
             await client.SendToGroupAsync("group1", BinaryData.FromString("hello world"), WebPubSubDataType.Text, fireAndForget:true);
             await client.SendToGroupAsync("group1", BinaryData.FromObjectAsJson(new
             {

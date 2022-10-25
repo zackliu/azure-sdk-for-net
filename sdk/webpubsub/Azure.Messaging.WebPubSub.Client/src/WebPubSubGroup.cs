@@ -16,6 +16,8 @@ namespace Azure.Messaging.WebPubSub.Clients
     internal class WebPubSubGroup
     {
         private volatile bool _isJoined;
+        private event SyncAsyncEventHandler<GroupMessageEventArgs> _messageReceived;
+        private List<SyncAsyncEventHandler<GroupMessageEventArgs>> _allDelegates = new();
 
         public bool IsJoined { get { return _isJoined; } set { _isJoined = value; } }
 
@@ -32,13 +34,26 @@ namespace Azure.Messaging.WebPubSub.Clients
         /// <summary>
         /// A event triggered when received messages from group
         /// </summary>
-        public event SyncAsyncEventHandler<GroupMessageEventArgs> MessageReceived;
+        public event SyncAsyncEventHandler<GroupMessageEventArgs> MessageReceived
+        {
+            add { _messageReceived += value; _allDelegates.Add(value); }
+            remove { _messageReceived -= value; _allDelegates.Remove(value); }
+        }
+
+        public void ClearMessageReceivedEvents()
+        {
+            foreach (var d in _allDelegates)
+            {
+                MessageReceived -= d;
+            }
+            _allDelegates.Clear();
+        }
 
         internal async Task SafeHandleMessageAsync(GroupDataMessage message, CancellationToken token)
         {
             try
             {
-                await MessageReceived.RaiseAsync(new GroupMessageEventArgs(message, false, token), nameof(GroupDataMessage), nameof(MessageReceived)).ConfigureAwait(false);
+                await _messageReceived.RaiseAsync(new GroupMessageEventArgs(message, false, token), nameof(GroupDataMessage), nameof(MessageReceived)).ConfigureAwait(false);
             }
             catch
             {
