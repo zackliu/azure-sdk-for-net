@@ -51,10 +51,6 @@ namespace Azure.Messaging.WebPubSub.Clients
         public ulong? AckId { get { throw null; } }
         public string Group { get { throw null; } }
     }
-    public partial class ProcessMessageFailedException : System.Exception
-    {
-        internal ProcessMessageFailedException() { }
-    }
     public partial class ReconnectionOptions
     {
         public ReconnectionOptions() { }
