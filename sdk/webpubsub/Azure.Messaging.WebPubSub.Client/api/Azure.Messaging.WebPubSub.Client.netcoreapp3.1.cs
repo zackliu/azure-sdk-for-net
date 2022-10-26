@@ -34,11 +34,6 @@ namespace Azure.Messaging.WebPubSub.Clients
         public string Group { get { throw null; } }
         public ulong? SequenceId { get { throw null; } }
     }
-    public partial class GroupMessageEventArgs : Azure.SyncAsyncEventArgs
-    {
-        internal GroupMessageEventArgs() : base (default(bool), default(System.Threading.CancellationToken)) { }
-        public Azure.Messaging.WebPubSub.Clients.GroupDataMessage Message { get { throw null; } }
-    }
     public partial class JoinGroupMessage : Azure.Messaging.WebPubSub.Clients.WebPubSubMessage
     {
         public JoinGroupMessage(string group, ulong? ackId) { }
@@ -91,11 +86,6 @@ namespace Azure.Messaging.WebPubSub.Clients
         public Azure.Messaging.WebPubSub.Clients.WebPubSubDataType DataType { get { throw null; } }
         public ulong? SequenceId { get { throw null; } }
     }
-    public partial class ServerMessageEventArgs : Azure.SyncAsyncEventArgs
-    {
-        internal ServerMessageEventArgs() : base (default(bool), default(System.Threading.CancellationToken)) { }
-        public Azure.Messaging.WebPubSub.Clients.ServerDataMessage Message { get { throw null; } }
-    }
     public partial class WebPubSubClient : System.IAsyncDisposable
     {
         protected WebPubSubClient() { }
@@ -104,12 +94,12 @@ namespace Azure.Messaging.WebPubSub.Clients
         public string ConnectionId { get { throw null; } }
         public event Azure.Core.SyncAsyncEventHandler<Azure.Messaging.WebPubSub.Clients.WebPubSubConnectedEventArgs> Connected { add { } remove { } }
         public event Azure.Core.SyncAsyncEventHandler<Azure.Messaging.WebPubSub.Clients.WebPubSubDisconnectedEventArgs> Disconnected { add { } remove { } }
-        public event Azure.Core.SyncAsyncEventHandler<Azure.Messaging.WebPubSub.Clients.GroupMessageEventArgs> GroupMessageReceived { add { } remove { } }
-        public event Azure.Core.SyncAsyncEventHandler<Azure.Messaging.WebPubSub.Clients.ServerMessageEventArgs> ServerMessageReceived { add { } remove { } }
+        public event Azure.Core.SyncAsyncEventHandler<Azure.Messaging.WebPubSub.Clients.WebPubSubGroupMessageEventArgs> GroupMessageReceived { add { } remove { } }
+        public event Azure.Core.SyncAsyncEventHandler<Azure.Messaging.WebPubSub.Clients.WebPubSubServerMessageEventArgs> ServerMessageReceived { add { } remove { } }
         public event Azure.Core.SyncAsyncEventHandler<Azure.Messaging.WebPubSub.Clients.WebPubSubStoppedEventArgs> Stopped { add { } remove { } }
         public System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
         protected virtual System.Threading.Tasks.ValueTask DisposeAsyncCore() { throw null; }
-        public virtual System.Threading.Tasks.Task<Azure.Messaging.WebPubSub.Clients.WebPubSubResult> JoinGroupAsync(string group, Azure.Core.SyncAsyncEventHandler<Azure.Messaging.WebPubSub.Clients.GroupMessageEventArgs> handler, ulong? ackId = default(ulong?), System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public virtual System.Threading.Tasks.Task<Azure.Messaging.WebPubSub.Clients.WebPubSubResult> JoinGroupAsync(string group, Azure.Core.SyncAsyncEventHandler<Azure.Messaging.WebPubSub.Clients.WebPubSubGroupMessageEventArgs> handler, ulong? ackId = default(ulong?), System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public virtual System.Threading.Tasks.Task<Azure.Messaging.WebPubSub.Clients.WebPubSubResult> JoinGroupAsync(string group, ulong? ackId = default(ulong?), System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public virtual System.Threading.Tasks.Task<Azure.Messaging.WebPubSub.Clients.WebPubSubResult> LeaveGroupAsync(string group, ulong? ackId = default(ulong?), System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public virtual System.Threading.Tasks.Task<Azure.Messaging.WebPubSub.Clients.WebPubSubResult> SendEventAsync(string eventName, System.BinaryData content, Azure.Messaging.WebPubSub.Clients.WebPubSubDataType dataType, ulong? ackId = default(ulong?), bool fireAndForget = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
@@ -132,8 +122,9 @@ namespace Azure.Messaging.WebPubSub.Clients
     public partial class WebPubSubConnectedEventArgs : Azure.SyncAsyncEventArgs
     {
         internal WebPubSubConnectedEventArgs() : base (default(bool), default(System.Threading.CancellationToken)) { }
-        public Azure.Messaging.WebPubSub.Clients.ConnectedMessage ConnectedMessage { get { throw null; } }
+        public string ConnectionId { get { throw null; } }
         public System.Collections.Generic.IReadOnlyDictionary<string, System.Exception> GroupRestoreState { get { throw null; } }
+        public string UserId { get { throw null; } }
     }
     public enum WebPubSubDataType
     {
@@ -146,6 +137,11 @@ namespace Azure.Messaging.WebPubSub.Clients
     {
         internal WebPubSubDisconnectedEventArgs() : base (default(bool), default(System.Threading.CancellationToken)) { }
         public Azure.Messaging.WebPubSub.Clients.DisconnectedMessage DisconnectedMessage { get { throw null; } }
+    }
+    public partial class WebPubSubGroupMessageEventArgs : Azure.SyncAsyncEventArgs
+    {
+        internal WebPubSubGroupMessageEventArgs() : base (default(bool), default(System.Threading.CancellationToken)) { }
+        public Azure.Messaging.WebPubSub.Clients.GroupDataMessage Message { get { throw null; } }
     }
     public partial class WebPubSubJsonProtocol : Azure.Messaging.WebPubSub.Clients.WebPubSubProtocol
     {
@@ -190,6 +186,11 @@ namespace Azure.Messaging.WebPubSub.Clients
     {
         internal WebPubSubResult() { }
         public ulong AckId { get { throw null; } }
+    }
+    public partial class WebPubSubServerMessageEventArgs : Azure.SyncAsyncEventArgs
+    {
+        internal WebPubSubServerMessageEventArgs() : base (default(bool), default(System.Threading.CancellationToken)) { }
+        public Azure.Messaging.WebPubSub.Clients.ServerDataMessage Message { get { throw null; } }
     }
     public partial class WebPubSubStoppedEventArgs : Azure.SyncAsyncEventArgs
     {

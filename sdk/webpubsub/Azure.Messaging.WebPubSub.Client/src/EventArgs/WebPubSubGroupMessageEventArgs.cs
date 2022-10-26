@@ -8,14 +8,14 @@ namespace Azure.Messaging.WebPubSub.Clients
     /// <summary>
     /// The event args for message from groups
     /// </summary>
-    public class GroupMessageEventArgs : SyncAsyncEventArgs
+    public class WebPubSubGroupMessageEventArgs : SyncAsyncEventArgs
     {
         /// <summary>
         /// The group data message.
         /// </summary>
         public GroupDataMessage Message { get; }
 
-        internal GroupMessageEventArgs(GroupDataMessage groupResponseMessage, bool isRunningSynchronously, CancellationToken cancellationToken = default) : base(isRunningSynchronously, cancellationToken)
+        internal WebPubSubGroupMessageEventArgs(GroupDataMessage groupResponseMessage, bool isRunningSynchronously, CancellationToken cancellationToken = default) : base(isRunningSynchronously, cancellationToken)
         {
             Message = groupResponseMessage;
         }

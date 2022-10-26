@@ -8,14 +8,13 @@ To interact with Azure WebPubSub Service, a client is needed for each area of fu
 
 ```C# Snippet:WebPubSubClient_HelloWorld_GetClientAccessUri
 var serviceClient = new WebPubSubServiceClient("<< CONNECTION STRING >>", "hub");
-var clientAccessUri = serviceClient.GetClientAccessUriAsync(roles: new[] { "webpubsub.joinLeaveGroup", "webpubsub.sendToGroup" });
+
+var client = new WebPubSubClient(new WebPubSubClientCredential(new WebPubSubClientCredentialOptions(token => {
+    return Task.FromResult(serviceClient.GetClientAccessUriAsync(roles: new[] { "webpubsub.joinLeaveGroup", "webpubsub.sendToGroup" }));
+})));
 ```
 
 The client is responsible for making a connection to the service and efficiently publishing messages or subscribing messages from groups. By default, `WebPubSubClient` uses `json.reliable.webpubsub.azure.v1` subprotocol.
-
-```C# Snippet:WebPubSubClient_HelloWorld_CreateClient
-var client = new WebPubSubClient(clientAccessUri);
-```
 
 ## Subscribe message
 
@@ -24,7 +23,7 @@ Messages can come from groups or from servers. The client can use an event handl
 ```C# Snippet:WebPubSubClient_HelloWorld_Subscribe
 client.Connected += new (e =>
 {
-    Console.WriteLine($"Connection {e.ConnectedMessage.ConnectionId} is connected");
+    Console.WriteLine($"Connection {e.ConnectionId} is connected");
     return Task.CompletedTask;
 });
 client.Disconnected += new (e =>
@@ -32,14 +31,14 @@ client.Disconnected += new (e =>
     Console.WriteLine($"Connection is disconnected");
     return Task.CompletedTask;
 });
-client.OnServerMessages(e =>
+client.ServerMessageReceived += new (e =>
 {
-    Console.WriteLine($"Receive message: {e.ServerDataMessage.Data}");
+    Console.WriteLine($"Receive message: {e.Message.Data}");
     return Task.CompletedTask;
 });
-client.OnGroupMessage(e =>
+client.GroupMessageReceived += new(e =>
 {
-    Console.WriteLine($"Receive group message from {e.GroupDataMessage.Group}: {e.GroupDataMessage.Data}");
+    Console.WriteLine($"Receive group message from {e.Message.Group}: {e.Message.Data}");
     return Task.CompletedTask;
 });
 

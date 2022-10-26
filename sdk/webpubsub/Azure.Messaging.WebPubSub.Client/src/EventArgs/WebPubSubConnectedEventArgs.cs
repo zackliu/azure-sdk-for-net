@@ -14,9 +14,14 @@ namespace Azure.Messaging.WebPubSub.Clients
     public class WebPubSubConnectedEventArgs : SyncAsyncEventArgs
     {
         /// <summary>
-        /// The connected message.
+        /// The user-id
         /// </summary>
-        public ConnectedMessage ConnectedMessage { get; }
+        public string UserId { get; }
+
+        /// <summary>
+        /// The connection id of the client
+        /// </summary>
+        public string ConnectionId { get; }
 
         /// <summary>
         /// Groups that currently the client should in from client sdk's perspective. Groups that join or leave from server won't be taken into consideration.
@@ -28,7 +33,8 @@ namespace Azure.Messaging.WebPubSub.Clients
 
         internal WebPubSubConnectedEventArgs(ConnectedMessage connectedMessage, IReadOnlyDictionary<string, Exception> groupRestoreState, bool isRunningSynchronously, CancellationToken cancellationToken = default) : base(isRunningSynchronously, cancellationToken)
         {
-            ConnectedMessage = connectedMessage;
+            UserId = connectedMessage.UserId;
+            ConnectionId = connectedMessage.ConnectionId;
             GroupRestoreState = groupRestoreState;
         }
     }

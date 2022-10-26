@@ -19,9 +19,9 @@ var client = new WebPubSubClient(new WebPubSubClientCredential(new WebPubSubClie
 If you are only interested in some specific groups. You can directly add event handler to some groups instead of a general `MessageReceived`. Note that adding an event handler doesn't means the client is joined the group. You need to use a separate join group operation to actually join the group.
 
 ```C# Snippet:WebPubSubClient_ClientAndGroup_GroupSubscribe
-client.OnGroupMessage("testGroup", e =>
+await client.JoinGroupAsync("testGroup", e =>
 {
-    Console.WriteLine($"Receive group message from {e.GroupDataMessage.Group}: {e.GroupDataMessage.Data}");
+    Console.WriteLine($"Receive group message from {e.Message.Group}: {e.Message.Data}");
     return Task.CompletedTask;
 });
 ```
