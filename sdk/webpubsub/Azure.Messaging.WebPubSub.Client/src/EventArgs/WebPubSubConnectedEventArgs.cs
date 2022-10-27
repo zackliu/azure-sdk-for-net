@@ -11,7 +11,7 @@ namespace Azure.Messaging.WebPubSub.Clients
     /// <summary>
     /// The event args for connected
     /// </summary>
-    public class WebPubSubConnectedEventArgs : SyncAsyncEventArgs
+    public class WebPubSubConnectedEventArgs
     {
         /// <summary>
         /// The user-id
@@ -31,11 +31,16 @@ namespace Azure.Messaging.WebPubSub.Clients
         /// </summary>
         public IReadOnlyDictionary<string, Exception> GroupRestoreState { get; }
 
-        internal WebPubSubConnectedEventArgs(ConnectedMessage connectedMessage, IReadOnlyDictionary<string, Exception> groupRestoreState, bool isRunningSynchronously, CancellationToken cancellationToken = default) : base(isRunningSynchronously, cancellationToken)
+        /// <summary>
+        /// Gets a cancellation token related to the original operation that raised the event.
+        /// </summary>
+        public CancellationToken CancellationToken { get; }
+
+        internal WebPubSubConnectedEventArgs(ConnectedMessage connectedMessage, CancellationToken cancellationToken = default)
         {
             UserId = connectedMessage.UserId;
             ConnectionId = connectedMessage.ConnectionId;
-            GroupRestoreState = groupRestoreState;
+            CancellationToken = cancellationToken;
         }
     }
 }

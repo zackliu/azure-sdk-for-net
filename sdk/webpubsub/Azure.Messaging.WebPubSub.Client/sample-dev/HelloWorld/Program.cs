@@ -38,11 +38,6 @@ namespace HelloWorld
             await client.StartAsync();
 
             await client.JoinGroupAsync("group1");
-            await client.JoinGroupAsync("group1", e =>
-            {
-                Console.WriteLine($"Receive group message from {e.Message.Group}: {e.Message.Data}");
-                return Task.CompletedTask;
-            });
             await client.SendToGroupAsync("group1", BinaryData.FromString("hello world"), WebPubSubDataType.Text, fireAndForget:true);
             await client.SendToGroupAsync("group1", BinaryData.FromObjectAsJson(new
             {

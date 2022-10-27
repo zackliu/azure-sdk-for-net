@@ -8,16 +8,22 @@ namespace Azure.Messaging.WebPubSub.Clients
     /// <summary>
     /// The event args for disconnected
     /// </summary>
-    public class WebPubSubDisconnectedEventArgs : SyncAsyncEventArgs
+    public class WebPubSubDisconnectedEventArgs
     {
         /// <summary>
         /// The disconnected message
         /// </summary>
         public DisconnectedMessage DisconnectedMessage { get; }
 
-        internal WebPubSubDisconnectedEventArgs(DisconnectedMessage disconnectedMessage, bool isRunningSynchronously, CancellationToken cancellationToken = default) : base(isRunningSynchronously, cancellationToken)
+        /// <summary>
+        /// Gets a cancellation token related to the original operation that raised the event.
+        /// </summary>
+        public CancellationToken CancellationToken { get; }
+
+        internal WebPubSubDisconnectedEventArgs(DisconnectedMessage disconnectedMessage, CancellationToken cancellationToken = default)
         {
             DisconnectedMessage = disconnectedMessage;
+            CancellationToken = cancellationToken;
         }
     }
 }

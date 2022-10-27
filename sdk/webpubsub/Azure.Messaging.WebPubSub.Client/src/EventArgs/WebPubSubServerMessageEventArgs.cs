@@ -8,16 +8,22 @@ namespace Azure.Messaging.WebPubSub.Clients
     /// <summary>
     /// The event args for message from server or groups
     /// </summary>
-    public class WebPubSubServerMessageEventArgs : SyncAsyncEventArgs
+    public class WebPubSubServerMessageEventArgs
     {
         /// <summary>
         /// The server data message
         /// </summary>
         public ServerDataMessage Message { get; }
 
-        internal WebPubSubServerMessageEventArgs(ServerDataMessage message, bool isRunningSynchronously, CancellationToken cancellationToken = default) : base(isRunningSynchronously, cancellationToken)
+        /// <summary>
+        /// Gets a cancellation token related to the original operation that raised the event.
+        /// </summary>
+        public CancellationToken CancellationToken { get; }
+
+        internal WebPubSubServerMessageEventArgs(ServerDataMessage message, CancellationToken cancellationToken = default)
         {
             Message = message;
+            CancellationToken = cancellationToken;
         }
     }
 }

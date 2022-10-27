@@ -17,20 +17,39 @@ namespace Azure.Messaging.WebPubSub.Clients
         /// <summary>
         /// Get or set the protocol to use.
         /// </summary>
-        public WebPubSubProtocol Protocol { get; set; }
+        public WebPubSubProtocol Protocol { get; set; } = new WebPubSubJsonReliableProtocol();
 
         /// <summary>
-        /// Get or set the reconnection options
+        /// Get or set whether to auto reconnect
         /// </summary>
-        public ReconnectionOptions ReconnectionOptions { get; set; }
+        public bool AutoReconnect { get; set; } = true;
+
+        /// <summary>
+        /// Get or set whether to auto restore groups after reconnecting
+        /// </summary>
+        public bool AutoRestoreGroups { get; set; } = true;
+
+        /// <summary>
+        /// Get or set the retry options for operations like joining group and sending messages
+        /// </summary>
+        public RetryOptions RetryOptions { get; }
+
+        /// <summary>
+        /// Get or set the retry options for reconnecting
+        /// </summary>
+        internal RetryOptions ReconnectRetryOptions { get; }
 
         /// <summary>
         /// Construct a WebPubSubClientOptions
         /// </summary>
         public WebPubSubClientOptions()
         {
-            Protocol = new WebPubSubJsonReliableProtocol();
-            ReconnectionOptions = new ReconnectionOptions();
+            RetryOptions = Utils.GetRetryOptions();
+
+            ReconnectRetryOptions = Utils.GetRetryOptions();
+            ReconnectRetryOptions.MaxRetries = int.MaxValue;
+            ReconnectRetryOptions.Delay = TimeSpan.FromSeconds(1);
+            ReconnectRetryOptions.MaxDelay = TimeSpan.FromSeconds(5);
         }
     }
 }

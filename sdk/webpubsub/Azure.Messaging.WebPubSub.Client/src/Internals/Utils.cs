@@ -21,6 +21,10 @@ namespace Azure.Messaging.WebPubSub.Clients
 
         internal static void FireAndForget(this Task task)
         {
+            if (task == null)
+            {
+                return;
+            }
             _ = Task.Run(() => task);
         }
     }
