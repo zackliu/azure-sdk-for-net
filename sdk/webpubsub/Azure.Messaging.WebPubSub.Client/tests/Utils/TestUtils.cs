@@ -9,6 +9,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using Xunit;
+using System.Buffers;
+using System.Text.Json;
+using Azure.Core;
+using System.Reflection;
+using Azure.Messaging.WebPubSub.Clients;
 
 namespace Azure.Messaging.WebPubSub.Client.Tests
 {
@@ -90,6 +95,59 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
 
             // If we get here, 'task' is finished and succeeded.
             return task.GetAwaiter().GetResult();
+        }
+
+        public static T GetPrivateField<T>(this object obj, string name)
+        {
+            var fieldInfo = obj.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            return (T)fieldInfo.GetValue(obj);
+        }
+
+        public static ReadOnlySequence<byte> GetPayload(object msg)
+        {
+            return new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(msg)));
+        }
+
+        public static ReadOnlySequence<byte> GetConnectedPayload(string connectionId = null, string userId = null) => GetPayload(new { type = "system", @event = "connected", userId = userId ?? "user", connectionId = connectionId ?? "connection", reconnectionToken = "rec" });
+        public static ReadOnlySequence<byte> GetDisconnectedPayload(string reason = null) => GetPayload(new { type = "system", @event = "disconnected", message = reason ?? "reason" });
+        public static ReadOnlySequence<byte> GetGroupMessagePayload(ulong sequenceId) => GetPayload(new
+        {
+            sequenceId = sequenceId,
+            type = "message",
+            from = "group",
+            group = "agroup",
+            dataType = "text",
+            data = "textdata",
+            fromUserId = "user"
+        });
+        public static ReadOnlySequence<byte> GetServerMessagePayload(ulong sequenceId) => GetPayload(new
+        {
+            sequenceId = sequenceId,
+            type = "message",
+            from = "server",
+            dataType = "text",
+            data = "textdata"
+        });
+        public static ReadOnlySequence<byte> GetAckMessagePayload(ulong ackId, string error) => GetPayload(new
+        {
+            type = "ack",
+            ackId = ackId,
+            success = string.IsNullOrEmpty(error),
+            error = new
+            {
+                name = string.IsNullOrEmpty(error) ? error : "noError",
+                message = "message"
+            }
+        });
+
+        public static WebPubSubClientOptions GetClientOptionsForRetryTest(Action<RetryOptions> action = null)
+        {
+            var option = new WebPubSubClientOptions();
+            option.RetryOptions.Delay = TimeSpan.FromMilliseconds(10);
+            option.RetryOptions.MaxDelay = TimeSpan.FromMilliseconds(30);
+            option.RetryOptions.MaxRetries = 3;
+            action?.Invoke(option.RetryOptions);
+            return option;
         }
 
         private static string GetMessage(string memberName, string filePath, int? lineNumber)

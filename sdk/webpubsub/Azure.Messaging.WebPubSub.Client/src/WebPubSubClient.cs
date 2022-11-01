@@ -97,7 +97,8 @@ namespace Azure.Messaging.WebPubSub.Clients
         /// Initializes a PubSub client.
         /// </summary>
         /// <param name="clientAccessUri">The uri to connect to the service.</param>
-        public WebPubSubClient(Uri clientAccessUri) : this(new WebPubSubClientCredential(clientAccessUri))
+        /// <param name="options">A option for the client.</param>
+        public WebPubSubClient(Uri clientAccessUri, WebPubSubClientOptions options = null) : this(new WebPubSubClientCredential(clientAccessUri), options)
         {
         }
 
@@ -528,7 +529,7 @@ namespace Azure.Messaging.WebPubSub.Clients
             }
         }
 
-        private async Task SendCoreAsync(ReadOnlyMemory<byte> buffer, WebPubSubProtocolMessageType webPubSubProtocolMessageType, bool endOfMessage, CancellationToken cancellationToken)
+        internal virtual async Task SendCoreAsync(ReadOnlyMemory<byte> buffer, WebPubSubProtocolMessageType webPubSubProtocolMessageType, bool endOfMessage, CancellationToken cancellationToken)
         {
             var messageType = webPubSubProtocolMessageType == WebPubSubProtocolMessageType.Text ? WebSocketMessageType.Text : WebSocketMessageType.Binary;
             await _client.SendAsync(buffer, messageType, endOfMessage, cancellationToken).ConfigureAwait(false);
@@ -587,7 +588,7 @@ namespace Azure.Messaging.WebPubSub.Clients
             return Task.CompletedTask;
         }
 
-        private async void HandleConnectionConnected(ConnectedMessage connectedMessage, CancellationToken token)
+        internal async void HandleConnectionConnected(ConnectedMessage connectedMessage, CancellationToken token)
         {
             foreach (var (name, g) in _groups)
             {
@@ -595,10 +596,7 @@ namespace Azure.Messaging.WebPubSub.Clients
                 {
                     try
                     {
-                        await SendMessageWithAckAsync(id =>
-                        {
-                            return new JoinGroupMessage(name, id);
-                        }, null, token: token).ConfigureAwait(false);
+                        await JoinGroupAttemptAsync(name, cancellationToken: token).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -830,19 +828,20 @@ namespace Azure.Messaging.WebPubSub.Clients
 
                 _serverDataChannel.Writer.TryWrite(serverResponseMessage);
             }
+        }
 
-            void HandleAckMessage(AckMessage ackMessage)
+        internal void HandleAckMessage(AckMessage ackMessage)
+        {
+            if (_ackCache.TryRemove(ackMessage.AckId, out var entity))
             {
-                if (_ackCache.TryGetValue(ackMessage.AckId, out var entity))
+                if (ackMessage.Success ||
+                    ackMessage.Error?.Name == "Duplicate")
                 {
-                    if (ackMessage.Success ||
-                        ackMessage.Error?.Name == "Duplicate")
-                    {
-                        entity.SetResult(new WebPubSubResult(ackMessage.AckId, ackMessage.Error?.Name == "Duplicate"));
-                    }
-
-                    entity.SetException(new SendMessageFailedException("Received non-success acknowledge from the service", ackMessage.AckId, ackMessage.Error));
+                    entity.SetResult(new WebPubSubResult(ackMessage.AckId, ackMessage.Error?.Name == "Duplicate"));
+                    return;
                 }
+
+                entity.SetException(new SendMessageFailedException("Received non-success acknowledge from the service", ackMessage.AckId, ackMessage.Error));
             }
         }
 

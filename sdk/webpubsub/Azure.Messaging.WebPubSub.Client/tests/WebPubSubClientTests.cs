@@ -31,7 +31,6 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
                 await Task.Delay(int.MaxValue).AwaitWithCancellation(token);
                 return new WebSocketReadResult(new ReadOnlySequence<byte>(), false);
             });
-            //_webSocketClientMoc.Setup(c => c.ConnectAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             _factoryMoc = new Mock<IWebSocketClientFactory>();
             _factoryMoc.Setup(f => f.CreateWebSocketClient(It.IsAny<Uri>(), It.IsAny<string>())).Returns(_webSocketClientMoc.Object);
         }
@@ -74,7 +73,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
             var idx = 0;
             var payloads = new WebSocketReadResult[]
             {
-                new WebSocketReadResult(GetPayload(new { type = "system", @event = "connected", userId = "user", connectionId = "connection", reconnectionToken = "rec" }), false),
+                new WebSocketReadResult(TestUtils.GetConnectedPayload(), false),
                 new WebSocketReadResult(default, true),
             };
 
@@ -88,7 +87,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
 
             client.Connected += new(e =>
             {
-                connectedTcs.SetResult(null);
+                connectedTcs.TrySetResult(null);
                 return Task.CompletedTask;
             });
             client.Disconnected += new(e =>
@@ -98,7 +97,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
             });
             client.Stopped += new(e =>
             {
-                stoppedTcs.SetResult(null);
+                stoppedTcs.TrySetResult(null);
                 return Task.CompletedTask;
             });
             var connectUriTcs = new MultipleTimesTaskCompletionSource<Uri>(100);
@@ -147,7 +146,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
             var idx = 0;
             var payloads = new WebSocketReadResult[]
             {
-                new WebSocketReadResult(GetPayload(new { type = "system", @event = "connected", userId = "user", connectionId = "connection", reconnectionToken = "rec" }), false),
+                new WebSocketReadResult(TestUtils.GetConnectedPayload(), false),
                 new WebSocketReadResult(default, true),
             };
 
@@ -162,7 +161,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
 
             client.Connected += new(e =>
             {
-                connectedTcs.SetResult(null);
+                connectedTcs.TrySetResult(null);
                 return Task.CompletedTask;
             });
             client.Disconnected += new(e =>
@@ -172,7 +171,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
             });
             client.Stopped += new(e =>
             {
-                stoppedTcs.SetResult(null);
+                stoppedTcs.TrySetResult(null);
                 return Task.CompletedTask;
             });
             var connectUriTcs = new MultipleTimesTaskCompletionSource<Uri>(100);
@@ -228,16 +227,16 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
             var client = new WebPubSubClient(new WebPubSubClientCredential(_ =>
             {
                 return new ValueTask<Uri>(new Uri("wss://test.com"));
-            }), new WebPubSubClientOptions() { ReconnectionOptions = new ReconnectionOptions { AutoReconnect = false} });
+            }), new WebPubSubClientOptions() { AutoReconnect = false });
             client.WebSocketClientFactory = _factoryMoc.Object;
             client.Disconnected += new(e =>
             {
-                disconnectedTcs.SetResult(null);
+                disconnectedTcs.TrySetResult(null);
                 return Task.CompletedTask;
             });
             client.Stopped += new(e =>
             {
-                stoppedTcs.SetResult(null);
+                stoppedTcs.TrySetResult(null);
                 return Task.CompletedTask;
             });
 
@@ -248,9 +247,92 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
             await stoppedTcs.Task.OrTimeout();
         }
 
-        private static ReadOnlySequence<byte> GetPayload(object msg)
+        [Fact]
+        public async Task JoinGroupRetryTest()
         {
-            return new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(msg)));
+            var tcs = new MultipleTimesTaskCompletionSource<object>(10);
+
+            var clientMoc = new Mock<WebPubSubClient>(new Uri("wss://test.com"), TestUtils.GetClientOptionsForRetryTest());
+            clientMoc.Setup(c => c.JoinGroupAttemptAsync(It.IsAny<string>(), It.IsAny<ulong?>(), It.IsAny<CancellationToken>())).ReturnsAsync(() =>
+            {
+                tcs.IncreaseCallTimes(null);
+                throw new SendMessageFailedException("msg", null);
+            });
+            clientMoc.CallBase = true;
+            var client = clientMoc.Object;
+
+            await Assert.ThrowsAsync<SendMessageFailedException>(() => client.JoinGroupAsync("group", null, default)).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(1).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(2).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(3).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(4).OrTimeout();
+            tcs.AssertNoMoreCalls();
+        }
+
+        [Fact]
+        public async Task LeaveGroupRetryTest()
+        {
+            var tcs = new MultipleTimesTaskCompletionSource<object>(10);
+
+            var clientMoc = new Mock<WebPubSubClient>(new Uri("wss://test.com"), TestUtils.GetClientOptionsForRetryTest());
+            clientMoc.Setup(c => c.LeaveGroupAttemptAsync(It.IsAny<string>(), It.IsAny<ulong?>(), It.IsAny<CancellationToken>())).ReturnsAsync(() =>
+            {
+                tcs.IncreaseCallTimes(null);
+                throw new SendMessageFailedException("msg", null);
+            });
+            clientMoc.CallBase = true;
+            var client = clientMoc.Object;
+
+            await Assert.ThrowsAsync<SendMessageFailedException>(() => client.LeaveGroupAsync("group", null, default)).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(1).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(2).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(3).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(4).OrTimeout();
+            tcs.AssertNoMoreCalls();
+        }
+
+        [Fact]
+        public async Task SendToGroupRetryTest()
+        {
+            var tcs = new MultipleTimesTaskCompletionSource<object>(10);
+
+            var clientMoc = new Mock<WebPubSubClient>(new Uri("wss://test.com"), TestUtils.GetClientOptionsForRetryTest());
+            clientMoc.Setup(c => c.SendToGroupAttemptAsync(It.IsAny<string>(), It.IsAny<BinaryData>(), It.IsAny<WebPubSubDataType>(),It.IsAny<ulong?>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(() =>
+            {
+                tcs.IncreaseCallTimes(null);
+                throw new SendMessageFailedException("msg", null);
+            });
+            clientMoc.CallBase = true;
+            var client = clientMoc.Object;
+
+            await Assert.ThrowsAsync<SendMessageFailedException>(() => client.SendToGroupAsync("group", BinaryData.FromString("text"), WebPubSubDataType.Text)).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(1).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(2).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(3).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(4).OrTimeout();
+            tcs.AssertNoMoreCalls();
+        }
+
+        [Fact]
+        public async Task SendEventRetryTest()
+        {
+            var tcs = new MultipleTimesTaskCompletionSource<object>(10);
+
+            var clientMoc = new Mock<WebPubSubClient>(new Uri("wss://test.com"), TestUtils.GetClientOptionsForRetryTest());
+            clientMoc.Setup(c => c.SendEventAttemptAsync(It.IsAny<string>(), It.IsAny<BinaryData>(), It.IsAny<WebPubSubDataType>(), It.IsAny<ulong?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(() =>
+            {
+                tcs.IncreaseCallTimes(null);
+                throw new SendMessageFailedException("msg", null);
+            });
+            clientMoc.CallBase = true;
+            var client = clientMoc.Object;
+
+            await Assert.ThrowsAsync<SendMessageFailedException>(() => client.SendEventAsync("group", BinaryData.FromString("text"), WebPubSubDataType.Text)).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(1).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(2).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(3).OrTimeout();
+            await tcs.VerifyCalledTimesAsync(4).OrTimeout();
+            tcs.AssertNoMoreCalls();
         }
 
         private TaskCompletionSource<object> NewTcs() => new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
