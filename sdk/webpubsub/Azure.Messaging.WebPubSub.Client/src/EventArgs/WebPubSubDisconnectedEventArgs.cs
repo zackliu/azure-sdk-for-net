@@ -11,6 +11,11 @@ namespace Azure.Messaging.WebPubSub.Clients
     public class WebPubSubDisconnectedEventArgs
     {
         /// <summary>
+        /// The connection id of disconnected connection. Could be null if the connection didn't receive a connected message.
+        /// </summary>
+        public string ConnectionId { get; }
+
+        /// <summary>
         /// The disconnected message
         /// </summary>
         public DisconnectedMessage DisconnectedMessage { get; }
@@ -20,8 +25,9 @@ namespace Azure.Messaging.WebPubSub.Clients
         /// </summary>
         public CancellationToken CancellationToken { get; }
 
-        internal WebPubSubDisconnectedEventArgs(DisconnectedMessage disconnectedMessage, CancellationToken cancellationToken = default)
+        internal WebPubSubDisconnectedEventArgs(string connectionId, DisconnectedMessage disconnectedMessage, CancellationToken cancellationToken = default)
         {
+            ConnectionId = connectionId;
             DisconnectedMessage = disconnectedMessage;
             CancellationToken = cancellationToken;
         }

@@ -10,45 +10,59 @@ namespace HelloWorld
     {
         static async Task Main(string[] args)
         {
-            var serviceClient = new WebPubSubServiceClient("", "hub");
+            var serviceClient = new WebPubSubServiceClient(Environment.GetEnvironmentVariable("AWPS_CONNECTION_STRING"), "hub");
 
             var client = new WebPubSubClient(new WebPubSubClientCredential(token => 
                 new ValueTask<Uri>(serviceClient.GetClientAccessUriAsync(roles: new[] { "webpubsub.joinLeaveGroup", "webpubsub.sendToGroup" }))));
 
-            client.Connected += new(async e =>
+            client.Connected += e =>
             {
                 Console.WriteLine($"Connection {e.ConnectionId} is connected");
-            });
-            client.Disconnected += new(e =>
-            {
-                Console.WriteLine($"Connection {client.ConnectionId} is disconnected");
                 return Task.CompletedTask;
-            });
-            client.ServerMessageReceived += new(e =>
+            };
+            client.Disconnected += e =>
+            {
+                Console.WriteLine($"Connection {e.ConnectionId} is disconnected");
+                return Task.CompletedTask;
+            };
+            client.RestoreGroupFailed += e =>
+            {
+                Console.WriteLine($"Restore group {e.Group} failed: {e.Exception}");
+                return Task.CompletedTask;
+            };
+            client.ServerMessageReceived += e =>
             {
                 Console.WriteLine($"Receive message: {e.Message.Data}");
                 return Task.CompletedTask;
-            });
-            client.GroupMessageReceived += new(e =>
+            };
+            client.GroupMessageReceived += e =>
             {
                 Console.WriteLine($"Receive group message from {e.Message.Group}: {e.Message.Data}");
                 return Task.CompletedTask;
-            });
+            };
             
             await client.StartAsync();
 
-            await client.JoinGroupAsync("group1");
-            await client.SendToGroupAsync("group1", BinaryData.FromString("hello world"), WebPubSubDataType.Text, fireAndForget:true);
-            await client.SendToGroupAsync("group1", BinaryData.FromObjectAsJson(new
+            var groupName = "WebPubSubClientTestGroup";
+            await client.JoinGroupAsync(groupName);
+
+            await client.SendToGroupAsync(groupName, BinaryData.FromString("hello world"), WebPubSubDataType.Text);
+            await client.SendToGroupAsync(groupName, BinaryData.FromObjectAsJson(new
             {
                 Foo = "Hello World!",
                 Bar = 42
             }), WebPubSubDataType.Json);
-            await client.SendToGroupAsync("group1", BinaryData.FromBytes(Convert.FromBase64String("YXNkZmFzZGZk")), WebPubSubDataType.Binary);
-            await client.SendEventAsync("eventName", BinaryData.FromString("hello world"), WebPubSubDataType.Text);
-            await Task.Delay(3000);
+            await client.SendToGroupAsync(groupName, BinaryData.FromBytes(Convert.FromBase64String("YXNkZmFzZGZk")), WebPubSubDataType.Binary);
 
-            await client.DisposeAsync();
+            await Task.Delay(1000);
+            await client.StopAsync();
+
+            await client.StartAsync();
+            await client.JoinGroupAsync(groupName);
+            await client.SendToGroupAsync(groupName, BinaryData.FromString("hello world"), WebPubSubDataType.Text);
+
+            await Task.Delay(1000);
+            await client.StopAsync();
         }
     }
 }

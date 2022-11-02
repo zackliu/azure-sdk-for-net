@@ -78,7 +78,7 @@ namespace Azure.Messaging.WebPubSub.Clients
         // Fields per websocket
         private Task _receiveTask;
 #pragma warning disable CA2213 // Disposable fields should be disposed
-        private IWebSocketClient _client;
+        private volatile IWebSocketClient _client;
 #pragma warning restore CA2213 // Disposable fields should be disposed
 
         private volatile bool _disposed;
@@ -156,6 +156,11 @@ namespace Azure.Messaging.WebPubSub.Clients
             await _connectionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
+                lock (_stopLock)
+                {
+                    _stoppingTask = null;
+                }
+
                 if (_clientState.CurrentState != WebPubSubClientState.Stopped)
                 {
                     throw new InvalidOperationException("Client can be only started when the state is Stopped");
@@ -243,9 +248,6 @@ namespace Azure.Messaging.WebPubSub.Clients
 
         private async Task StopAsyncCore()
         {
-            // Stop new StartAsync during this time and stop all related receiving tasks in running.
-            _stoppedCts.Cancel();
-
             // We will wait for StartAsync
             // After that, there will be two cases:
             //   1. Start success and ReceiveTask is set, then we just wait for the ReceiveTask
@@ -253,7 +255,10 @@ namespace Azure.Messaging.WebPubSub.Clients
             await _connectionLock.WaitAsync().ConfigureAwait(false);
             try
             {
+                // Try close websocket gracefully first
                 await (_client?.StopAsync(CancellationToken.None) ?? Task.CompletedTask).ConfigureAwait(false);
+                // Stop new StartAsync during this time and stop all related receiving tasks in running.
+                _stoppedCts.Cancel();
                 await (_receiveTask ?? Task.CompletedTask).ConfigureAwait(false);
             }
             finally
@@ -575,7 +580,7 @@ namespace Azure.Messaging.WebPubSub.Clients
 
             try
             {
-                Disconnected?.Invoke(new WebPubSubDisconnectedEventArgs(disconnectedMessage)).FireAndForget();
+                Disconnected?.Invoke(new WebPubSubDisconnectedEventArgs(_connectionId, disconnectedMessage)).FireAndForget();
             }
             catch
             {
