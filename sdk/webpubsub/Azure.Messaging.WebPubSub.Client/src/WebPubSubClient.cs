@@ -255,11 +255,20 @@ namespace Azure.Messaging.WebPubSub.Clients
             await _connectionLock.WaitAsync().ConfigureAwait(false);
             try
             {
-                // Try close websocket gracefully first
-                await (_client?.StopAsync(CancellationToken.None) ?? Task.CompletedTask).ConfigureAwait(false);
-                // Stop new StartAsync during this time and stop all related receiving tasks in running.
-                _stoppedCts.Cancel();
-                await (_receiveTask ?? Task.CompletedTask).ConfigureAwait(false);
+                try
+                {
+                    // Try close websocket gracefully first
+                    await (_client?.StopAsync(CancellationToken.None) ?? Task.CompletedTask).ConfigureAwait(false);
+                }
+                catch { }
+
+                try
+                {
+                    // Stop new StartAsync during this time and stop all related receiving tasks in running.
+                    _stoppedCts.Cancel();
+                    await (_receiveTask ?? Task.CompletedTask).ConfigureAwait(false);
+                }
+                catch { }
             }
             finally
             {

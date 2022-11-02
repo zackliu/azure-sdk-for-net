@@ -39,7 +39,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
         public async Task WebPubSubClientStartStopTest()
         {
             var fetchTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var socketStopTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var socketStopTcs = new MultipleTimesTaskCompletionSource<object>(10);
             var client = new WebPubSubClient(new WebPubSubClientCredential(_ =>
             {
                 fetchTcs.TrySetResult(null);
@@ -47,7 +47,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
             }));
             _webSocketClientMoc.Setup(c => c.StopAsync(It.IsAny<CancellationToken>())).Returns(() =>
             {
-                socketStopTcs.TrySetResult(null);
+                socketStopTcs.IncreaseCallTimes(null);
                 return Task.CompletedTask;
             });
             client.WebSocketClientFactory = _factoryMoc.Object;
@@ -60,11 +60,13 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
 
             // Stop should work
             await client.StopAsync().OrTimeout();
-            Assert.True(socketStopTcs.Task.IsCompleted);
+            Assert.True(socketStopTcs.VerifyCalledTimesAsync(1).IsCompleted);
+            TestUtils.AssertTimeout(socketStopTcs.VerifyCalledTimesAsync(2));
 
             // After stop we can have another start
             await client.StartAsync().OrTimeout();
             await client.StopAsync().OrTimeout();
+            await socketStopTcs.VerifyCalledTimesAsync(2).OrTimeout();
         }
 
         [Fact]
