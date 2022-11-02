@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Buffers;
+using System.Net.WebSockets;
 
 namespace Azure.Messaging.WebPubSub.Clients
 {
@@ -11,10 +12,13 @@ namespace Azure.Messaging.WebPubSub.Clients
 
         public ReadOnlySequence<byte> Payload { get; }
 
-        public WebSocketReadResult(ReadOnlySequence<byte> payload, bool isClosed = false)
+        public WebSocketCloseStatus? CloseStatus { get; }
+
+        public WebSocketReadResult(ReadOnlySequence<byte> payload, bool isClosed = false, WebSocketCloseStatus? closeStatus = null)
         {
             Payload = payload;
             IsClosed = isClosed;
+            CloseStatus = closeStatus;
         }
     }
 }

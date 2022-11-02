@@ -121,7 +121,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
         {
             var wsPair = new TestWebSocketClientPair(_webSocketClientMoc);
             var options = new WebPubSubClientOptions();
-            options.RetryOptions.MaxRetries = 0;
+            options.MessageRetryOptions.MaxRetries = 0;
             var client = new WebPubSubClient(new Uri("wss://test.com"), options);
             client.WebSocketClientFactory = _factoryMoc.Object;
 

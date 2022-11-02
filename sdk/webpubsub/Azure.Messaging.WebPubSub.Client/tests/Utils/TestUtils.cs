@@ -143,10 +143,10 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
         public static WebPubSubClientOptions GetClientOptionsForRetryTest(Action<RetryOptions> action = null)
         {
             var option = new WebPubSubClientOptions();
-            option.RetryOptions.Delay = TimeSpan.FromMilliseconds(10);
-            option.RetryOptions.MaxDelay = TimeSpan.FromMilliseconds(30);
-            option.RetryOptions.MaxRetries = 3;
-            action?.Invoke(option.RetryOptions);
+            option.MessageRetryOptions.Delay = TimeSpan.FromMilliseconds(10);
+            option.MessageRetryOptions.MaxDelay = TimeSpan.FromMilliseconds(30);
+            option.MessageRetryOptions.MaxRetries = 3;
+            action?.Invoke(option.MessageRetryOptions);
             return option;
         }
 

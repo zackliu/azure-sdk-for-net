@@ -125,7 +125,7 @@ namespace Azure.Messaging.WebPubSub.Clients
             _clientState = new ClientState();
 
             _reconnectRetryPolicy = new WebPubSubRetryPolicy(_options.ReconnectRetryOptions);
-            _operationRetryPolicy = new WebPubSubRetryPolicy(_options.RetryOptions);
+            _operationRetryPolicy = new WebPubSubRetryPolicy(_options.MessageRetryOptions);
 
             // Process message
             _processingServerDataMessageTask = StartServerProcessingDataMessage();
@@ -486,6 +486,7 @@ namespace Azure.Messaging.WebPubSub.Clients
             }
 
             using var buffer = new MemoryBufferWriter();
+            WebSocketCloseStatus? closeStatus = null;
             try
             {
                 while (!token.IsCancellationRequested)
@@ -493,6 +494,7 @@ namespace Azure.Messaging.WebPubSub.Clients
                     var result = await client.ReceiveOneFrameAsync(token).ConfigureAwait(false);
                     if (result.IsClosed)
                     {
+                        closeStatus = result.CloseStatus;
                         break;
                     }
                     if (result.Payload.Length > 0)
@@ -525,7 +527,7 @@ namespace Azure.Messaging.WebPubSub.Clients
                 {
                 }
 
-                await HandleConnectionClose(client, token).ConfigureAwait(false);
+                await HandleConnectionClose(closeStatus, token).ConfigureAwait(false);
             }
         }
 
@@ -673,7 +675,7 @@ namespace Azure.Messaging.WebPubSub.Clients
             }
         }
 
-        private async Task HandleConnectionClose(IWebSocketClient client, CancellationToken token)
+        private async Task HandleConnectionClose(WebSocketCloseStatus? closeStatus, CancellationToken token)
         {
             foreach (var entity in _ackCache)
             {
@@ -683,7 +685,7 @@ namespace Azure.Messaging.WebPubSub.Clients
                 }
             }
 
-            if (client.CloseStatus == WebSocketCloseStatus.PolicyViolation)
+            if (closeStatus == WebSocketCloseStatus.PolicyViolation)
             {
                 WebPubSubClientEventSource.Log.StopRecovery(_connectionId, $"The websocket close with status: {WebSocketCloseStatus.PolicyViolation}");
                 await HandleConnectionCloseAndNoRecovery(_latestDisconnectedMessage, token).ConfigureAwait(false);

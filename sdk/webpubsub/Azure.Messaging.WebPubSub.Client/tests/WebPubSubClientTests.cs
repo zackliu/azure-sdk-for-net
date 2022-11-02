@@ -74,7 +74,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
             var payloads = new WebSocketReadResult[]
             {
                 new WebSocketReadResult(TestUtils.GetConnectedPayload(), false),
-                new WebSocketReadResult(default, true),
+                new WebSocketReadResult(default, true, WebSocketCloseStatus.ProtocolError),
             };
 
             var connectedTcs = NewTcs();
@@ -112,7 +112,6 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
                 idx = (idx + 1) % 2;
                 return Task.FromResult(payload);
             });
-            _webSocketClientMoc.SetupGet(c => c.CloseStatus).Returns(WebSocketCloseStatus.ProtocolError);
             client.WebSocketClientFactory = _factoryMoc.Object;
             client.RecoverDelay = TimeSpan.FromMilliseconds(100);
 
@@ -147,7 +146,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
             var payloads = new WebSocketReadResult[]
             {
                 new WebSocketReadResult(TestUtils.GetConnectedPayload(), false),
-                new WebSocketReadResult(default, true),
+                new WebSocketReadResult(default, true, status),
             };
 
             var connectedTcs = NewTcs();
@@ -186,8 +185,6 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
                 idx = (idx + 1) % 2;
                 return Task.FromResult(payload);
             });
-            // Make the close a PolicyViolation to stop recover
-            _webSocketClientMoc.SetupGet(c => c.CloseStatus).Returns(status);
             client.WebSocketClientFactory = _factoryMoc.Object;
             client.RecoverDelay = TimeSpan.FromMilliseconds(100);
 
@@ -217,10 +214,9 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
         {
             _webSocketClientMoc.Setup(c => c.ReceiveOneFrameAsync(It.IsAny<CancellationToken>())).Returns(() =>
             {
-                return Task.FromResult(new WebSocketReadResult(default, true));
+                // Make the close a PolicyViolation to stop recover
+                return Task.FromResult(new WebSocketReadResult(default, true, WebSocketCloseStatus.PolicyViolation));
             });
-            // Make the close a PolicyViolation to stop recover
-            _webSocketClientMoc.SetupGet(c => c.CloseStatus).Returns(WebSocketCloseStatus.PolicyViolation);
 
             var disconnectedTcs = NewTcs();
             var stoppedTcs = NewTcs();

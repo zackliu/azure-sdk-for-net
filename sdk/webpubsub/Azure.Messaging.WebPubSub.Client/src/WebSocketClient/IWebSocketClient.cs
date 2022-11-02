@@ -13,8 +13,6 @@ namespace Azure.Messaging.WebPubSub.Clients
 {
     internal interface IWebSocketClient : IDisposable
     {
-        WebSocketCloseStatus? CloseStatus { get; }
-
         Task ConnectAsync(CancellationToken token);
 
         Task SendAsync(ReadOnlyMemory<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken);

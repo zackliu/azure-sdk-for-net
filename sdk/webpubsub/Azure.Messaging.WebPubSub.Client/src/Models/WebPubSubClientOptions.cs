@@ -32,7 +32,7 @@ namespace Azure.Messaging.WebPubSub.Clients
         /// <summary>
         /// Get or set the retry options for operations like joining group and sending messages
         /// </summary>
-        public RetryOptions RetryOptions { get; }
+        public RetryOptions MessageRetryOptions { get; }
 
         /// <summary>
         /// Get or set the retry options for reconnecting
@@ -44,7 +44,7 @@ namespace Azure.Messaging.WebPubSub.Clients
         /// </summary>
         public WebPubSubClientOptions()
         {
-            RetryOptions = Utils.GetRetryOptions();
+            MessageRetryOptions = Utils.GetRetryOptions();
 
             ReconnectRetryOptions = Utils.GetRetryOptions();
             ReconnectRetryOptions.MaxRetries = int.MaxValue;

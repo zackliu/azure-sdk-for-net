@@ -25,6 +25,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests.Utils
         {
             public ReadOnlySequence<byte> Payload { get; set; }
             public bool IsClose { get; set; }
+            public WebSocketCloseStatus? CloseStatus { get; set; }
         }
         private struct OutputItem
         {
@@ -39,7 +40,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests.Utils
             {
                 var item = await _input.VerifyCalledTimesAsync(_inputIdx);
                 _inputIdx++;
-                return new WebSocketReadResult(item.Payload, item.IsClose);
+                return new WebSocketReadResult(item.Payload, item.IsClose, item.CloseStatus);
             });
             _mockWebSocketClient.Setup(c => c.SendAsync(It.IsAny<ReadOnlyMemory<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).
                 Returns<ReadOnlyMemory<byte>, WebSocketMessageType, bool, CancellationToken>((p, t, e, c) =>
@@ -49,9 +50,9 @@ namespace Azure.Messaging.WebPubSub.Client.Tests.Utils
             });
         }
 
-        public void Input(ReadOnlySequence<byte> payload, bool isClose)
+        public void Input(ReadOnlySequence<byte> payload, bool isClose, WebSocketCloseStatus? closeStatus = null)
         {
-            _input.IncreaseCallTimes(new InputItem { Payload = payload, IsClose = isClose });
+            _input.IncreaseCallTimes(new InputItem { Payload = payload, IsClose = isClose, CloseStatus = closeStatus });
         }
 
         public async Task<ReadOnlyMemory<byte>> Output()

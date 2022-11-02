@@ -19,8 +19,6 @@ namespace Azure.Messaging.WebPubSub.Clients
 
         private readonly SemaphoreSlim _sendLock = new SemaphoreSlim(1);
 
-        public WebSocketCloseStatus? CloseStatus => _socket.CloseStatus;
-
         public WebSocketClient(Uri uri, string protocol)
         {
             _protocol = protocol;
@@ -79,7 +77,7 @@ namespace Azure.Messaging.WebPubSub.Clients
                     catch { }
                 }
 
-                return new WebSocketReadResult(default, true);
+                return new WebSocketReadResult(default, true, _socket.CloseStatus);
             }
 
             return new WebSocketReadResult(_buffer.AsReadOnlySequence());

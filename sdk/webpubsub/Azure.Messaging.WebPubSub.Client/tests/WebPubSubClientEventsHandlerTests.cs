@@ -13,6 +13,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core.Pipeline;
+using Azure.Messaging.WebPubSub.Client.Tests.Utils;
 using Azure.Messaging.WebPubSub.Clients;
 using Moq;
 using Xunit;
@@ -47,7 +48,6 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
             {
                 return Task.FromResult(packageSeq[idx++]);
             });
-            _webSocketClientMoc.SetupGet(c => c.CloseStatus).Returns(WebSocketCloseStatus.PolicyViolation); // Force to not recover
 
             var connectedTcs = NewTcs<WebPubSubConnectedEventArgs>();
             var serverMessageTcs = NewTcs<WebPubSubServerMessageEventArgs>();
@@ -106,7 +106,7 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
                 yield return new WebSocketReadResult(TestUtils.GetServerMessagePayload(1), false);
                 yield return new WebSocketReadResult(TestUtils.GetGroupMessagePayload(2), false);
                 yield return new WebSocketReadResult(TestUtils.GetDisconnectedPayload(), false);
-                yield return new WebSocketReadResult(default, true);
+                yield return new WebSocketReadResult(default, true, WebSocketCloseStatus.PolicyViolation);
             }
         }
 
@@ -119,7 +119,6 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
             {
                 return Task.FromResult(packageSeq[idx++]);
             });
-            _webSocketClientMoc.SetupGet(c => c.CloseStatus).Returns(WebSocketCloseStatus.PolicyViolation); // Force to not recover
 
             var connectedTcs = new MultipleTimesTaskCompletionSource<object>(3);
 
@@ -142,10 +141,10 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
                 yield return new WebSocketReadResult(TestUtils.GetConnectedPayload(), false);
                 yield return new WebSocketReadResult(TestUtils.GetConnectedPayload(), false);
                 yield return new WebSocketReadResult(TestUtils.GetConnectedPayload(), false);
-                yield return new WebSocketReadResult(default, true);
+                yield return new WebSocketReadResult(default, true, WebSocketCloseStatus.PolicyViolation);
                 // after reconnect, there should be another invoke
                 yield return new WebSocketReadResult(TestUtils.GetConnectedPayload(), false);
-                yield return new WebSocketReadResult(default, true);
+                yield return new WebSocketReadResult(default, true, WebSocketCloseStatus.PolicyViolation);
             }
         }
 
@@ -186,6 +185,58 @@ namespace Azure.Messaging.WebPubSub.Client.Tests
 
             Assert.Contains("group1", groupSet);
             Assert.Contains("group2", groupSet);
+        }
+
+        [Fact]
+        public async Task OnMessageDuplicatedSequenceIdDrop()
+        {
+            var groupTcs = new MultipleTimesTaskCompletionSource<object>(100);
+            var serverTcs = new MultipleTimesTaskCompletionSource<object>(100);
+
+            var wsPair = new TestWebSocketClientPair(_webSocketClientMoc);
+            var client = new WebPubSubClient(new Uri("wss://test.com"));
+            client.WebSocketClientFactory = _factoryMoc.Object;
+            client.GroupMessageReceived += _ =>
+            {
+                groupTcs.IncreaseCallTimes(null);
+                return Task.CompletedTask;
+            };
+            client.ServerMessageReceived += _ =>
+            {
+                serverTcs.IncreaseCallTimes(null);
+                return Task.CompletedTask;
+            };
+
+            await client.StartAsync();
+            wsPair.Input(TestUtils.GetConnectedPayload(), false);
+
+            // Send to group and server with incremental seqId, all message should be distributed
+            wsPair.Input(TestUtils.GetGroupMessagePayload(1), false);
+            wsPair.Input(TestUtils.GetServerMessagePayload(2), false);
+
+            await groupTcs.VerifyCalledTimesAsync(1).OrTimeout();
+            await serverTcs.VerifyCalledTimesAsync(1).OrTimeout();
+
+            // Send with the same seqId
+            wsPair.Input(TestUtils.GetGroupMessagePayload(2), false);
+            wsPair.Input(TestUtils.GetServerMessagePayload(2), false);
+
+            TestUtils.AssertTimeout(groupTcs.VerifyCalledTimesAsync(2));
+            TestUtils.AssertTimeout(serverTcs.VerifyCalledTimesAsync(2));
+
+            // Recover doesn't affect seqId
+            wsPair.Input(default, true, WebSocketCloseStatus.NormalClosure);
+            wsPair.Input(TestUtils.GetGroupMessagePayload(2), false);
+            wsPair.Input(TestUtils.GetServerMessagePayload(2), false);
+            TestUtils.AssertTimeout(groupTcs.VerifyCalledTimesAsync(2));
+            TestUtils.AssertTimeout(serverTcs.VerifyCalledTimesAsync(2));
+
+            // Restart will reset seqId
+            wsPair.Input(default, true, WebSocketCloseStatus.PolicyViolation);
+            wsPair.Input(TestUtils.GetGroupMessagePayload(1), false);
+            wsPair.Input(TestUtils.GetServerMessagePayload(2), false);
+            await groupTcs.VerifyCalledTimesAsync(2).OrTimeout();
+            await serverTcs.VerifyCalledTimesAsync(2).OrTimeout();
         }
 
         private TaskCompletionSource<T> NewTcs<T>() => new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
