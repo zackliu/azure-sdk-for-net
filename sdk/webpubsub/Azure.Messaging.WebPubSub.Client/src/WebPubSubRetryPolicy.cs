@@ -32,7 +32,7 @@ namespace Azure.Messaging.WebPubSub.Clients
             _maxDelay = options.MaxDelay;
             _mode = options.Mode;
 
-            _maxRetriesToGetMaxDelay = (int)Math.Ceiling(Math.Log2(_maxDelay.Ticks) - Math.Log2(_delay.Ticks) + 1);
+            _maxRetriesToGetMaxDelay = (int)Math.Ceiling(Math.Log(_maxDelay.Ticks, 2) - Math.Log(_delay.Ticks, 2) + 1);
         }
 
         /// <summary>
