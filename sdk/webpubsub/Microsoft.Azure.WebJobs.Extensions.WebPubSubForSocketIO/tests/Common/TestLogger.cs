@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 {
     public class TestLogger : ILogger
     {

@@ -6,7 +6,7 @@ using Microsoft.Azure.WebPubSub.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     internal class WebPubSubEventTypeJsonConverter : JsonConverter<WebPubSubEventType>
     {

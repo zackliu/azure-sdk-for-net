@@ -15,7 +15,7 @@ using Microsoft.Azure.WebPubSub.Common;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     /// <summary>
     /// Copied from Microsoft.Azure.WebPubSub.AspNetCore.

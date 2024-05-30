@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Triggers;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     internal class WebPubSubTriggerBindingProvider : ITriggerBindingProvider
     {

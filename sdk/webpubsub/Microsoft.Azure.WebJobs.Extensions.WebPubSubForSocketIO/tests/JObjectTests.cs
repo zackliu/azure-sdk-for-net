@@ -14,29 +14,23 @@ using NUnit.Framework;
 
 using SystemJson = System.Text.Json;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 {
     public class JObjectTests
     {
         public JObjectTests()
         {
-            WebPubSubConfigProvider.RegisterJsonConverter();
+            WebPubSubForSocketIOConfigProvider.RegisterJsonConverter();
         }
 
         [TestCase(nameof(SendToAllAction))]
         [TestCase(nameof(SendToConnectionAction))]
         [TestCase(nameof(SendToGroupAction))]
-        [TestCase(nameof(SendToUserAction))]
         [TestCase(nameof(AddConnectionToGroupAction))]
-        [TestCase(nameof(AddUserToGroupAction))]
         [TestCase(nameof(RemoveConnectionFromGroupAction))]
-        [TestCase(nameof(RemoveUserFromAllGroupsAction))]
-        [TestCase(nameof(RemoveUserFromGroupAction))]
         [TestCase(nameof(CloseAllConnectionsAction))]
         [TestCase(nameof(CloseClientConnectionAction))]
         [TestCase(nameof(CloseGroupConnectionsAction))]
-        [TestCase(nameof(GrantPermissionAction))]
-        [TestCase(nameof(RevokePermissionAction))]
         public void TestOutputConvert(string actionName)
         {
             var input = @"{ ""actionName"":""{0}"",""userId"":""user"", ""group"":""group1"",""connectionId"":""connection"",""data"":""test"",""dataType"":""text"", ""reason"":""close"", ""excluded"":[""aa"",""bb""]}";
@@ -45,7 +39,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
 
             var jObject = JObject.Parse(replacedInput);
 
-            var converted = WebPubSubConfigProvider.ConvertToWebPubSubOperation(jObject);
+            var converted = WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(jObject);
 
             Assert.AreEqual(actionName, converted.ActionName.ToString());
         }
@@ -53,7 +47,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
         [TestCase(nameof(SendToAllAction))]
         [TestCase(nameof(SendToConnectionAction))]
         [TestCase(nameof(SendToGroupAction))]
-        [TestCase(nameof(SendToUserAction))]
         public void TestInvalidSendConvert(string actionName)
         {
             var input = @"{ ""actionName"":""{0}"",""userId"":""user"", ""group"":""group1"",""connectionId"":""connection"",""data"": {""type"":""binary"", ""data"": [66, 105, 110, 97, 114, 121, 68, 97, 116, 97]} ,""dataType"":""binary"", ""reason"":""close"", ""excluded"":[""aa"",""bb""]}";
@@ -62,13 +55,12 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
 
             var jObject = JObject.Parse(replacedInput);
 
-            Assert.Throws<ArgumentException>(() => WebPubSubConfigProvider.ConvertToWebPubSubOperation(jObject));
+            Assert.Throws<ArgumentException>(() => WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(jObject));
         }
 
         [TestCase(typeof(SendToAllAction))]
         [TestCase(typeof(SendToConnectionAction))]
         [TestCase(typeof(SendToGroupAction))]
-        [TestCase(typeof(SendToUserAction))]
         public void TestValidSendBinaryConvert(Type actionName)
         {
             var input = @"{ ""actionName"":""{0}"",""userId"":""user"", ""group"":""group1"",""connectionId"":""connection"",""data"": {""type"":""Buffer"", ""data"": [66, 105, 110, 97, 114, 121, 68, 97, 116, 97]} ,""dataType"":""binary"", ""reason"":""close"", ""excluded"":[""aa"",""bb""]}";
@@ -77,7 +69,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
 
             var jObject = JObject.Parse(replacedInput);
 
-            var converted = WebPubSubConfigProvider.ConvertToWebPubSubOperation(jObject);
+            var converted = WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(jObject);
 
             // Use json format for message value validation.
             Assert.AreEqual("BinaryData", JObject.FromObject(converted)["data"].ToString());
@@ -94,7 +86,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
             var jObject = JObject.Parse(replacedInput);
 
             // Throws excpetion of not able to de-serialize to abstract class.
-            var ex = Assert.Throws<ArgumentException>(() => WebPubSubConfigProvider.ConvertToWebPubSubOperation(jObject));
+            var ex = Assert.Throws<ArgumentException>(() => WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(jObject));
             Assert.AreEqual($"Not supported WebPubSubOperation: {actionName}.", ex.Message);
         }
 

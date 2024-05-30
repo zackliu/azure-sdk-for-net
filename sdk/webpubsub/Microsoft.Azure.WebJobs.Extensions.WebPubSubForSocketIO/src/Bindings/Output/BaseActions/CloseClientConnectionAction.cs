@@ -3,23 +3,22 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System.Collections.Generic;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     /// <summary>
-    /// Operation to close all connections.
+    /// Operation to close a connection.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class CloseAllConnectionsAction : WebPubSubAction
+    public class CloseClientConnectionAction : WebPubSubAction
     {
         /// <summary>
-        /// ConnectionIds to exclude.
+        /// Target connectionId.
         /// </summary>
-        public IList<string> Excluded { get; set; } = new List<string>();
+        public string ConnectionId { get; set; }
 
         /// <summary>
-        /// Reason to close the connections.
+        /// Reason to close the connection.
         /// </summary>
         public string Reason { get; set; }
     }

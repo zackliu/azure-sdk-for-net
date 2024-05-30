@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     internal static class Constants
     {
@@ -9,8 +9,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
         public const string AllowedAllOrigins = "*";
 
         // WebPubSubOptions can be set by customers.
-        public const string WebPubSubConnectionStringName = "WebPubSubConnectionString";
-        public const string HubNameStringName = "WebPubSubHub";
+        public const string WebPubSubConnectionStringName = "WebPubSubForSocketIOConnectionString";
+        public const string HubNameStringName = "WebPubSubForSocketIOHub";
         public const string WebPubSubValidationStringName = "WebPubSubValidation";
 
         public static class ContentTypes

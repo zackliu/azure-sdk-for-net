@@ -10,7 +10,7 @@ using Microsoft.Azure.WebJobs.Host.Indexers;
 using Microsoft.Azure.WebPubSub.Common;
 using NUnit.Framework;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 {
     public class JobHostEndToEndTests
     {
@@ -104,14 +104,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
             }
 
             public static void TestWebPubSubInputConnection(
-                [WebPubSubConnection(Hub = "chat", UserId = "aaa")] WebPubSubConnection connection)
+                [WebPubSubConnection(Hub = "chat")] WebPubSubConnection connection)
             {
                 // Valid case use default url for verification.
                 Assert.AreEqual("wss://abc/client/hubs/chat", connection.BaseUri.AbsoluteUri);
             }
 
             public static async Task TestWebPubSubOutput(
-                [WebPubSub(Hub = "chat")] IAsyncCollector<WebPubSubAction> operation)
+                [WebPubSubForSocketIO(Hub = "chat")] IAsyncCollector<WebPubSubAction> operation)
             {
                 await operation.AddAsync(new SendToAllAction
                 {
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
             }
 
             public static async Task TestWebPubSubOutputMissingHub(
-                [WebPubSub] IAsyncCollector<WebPubSubAction> operation)
+                [WebPubSubForSocketIO] IAsyncCollector<WebPubSubAction> operation)
             {
                 await operation.AddAsync(new SendToAllAction
                 {

@@ -7,7 +7,7 @@ using Microsoft.Azure.WebJobs.Description;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Moq;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 {
     public class TestExtensionConfig : IExtensionConfigProvider
     {
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
             context.AddBindingRule<BindingDataAttribute>().
                 BindToInput(attr => attr.ToBeAutoResolve);
 
-            var rule1 = context.AddBindingRule<WebPubSubAttribute>();
+            var rule1 = context.AddBindingRule<WebPubSubForSocketIOAttribute>();
             rule1.BindToCollector(CreateTestCollector);
         }
 
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
             throw new NotImplementedException();
         }
 
-        private IAsyncCollector<WebPubSubAction> CreateTestCollector(WebPubSubAttribute attribute)
+        private IAsyncCollector<WebPubSubAction> CreateTestCollector(WebPubSubForSocketIOAttribute attribute)
         {
             var service = new Mock<WebPubSubServiceClient>();
             //service.Setup(x => x.SendToAll(It.IsAny<RequestContent>(), It.IsAny<string>(), null, It.IsAny<CancellationToken>()))

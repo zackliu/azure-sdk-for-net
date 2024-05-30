@@ -4,22 +4,22 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     /// <summary>
-    /// Operation to add a user to group.
+    /// Operation to add socket to a room.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class AddUserToGroupAction : WebPubSubAction
+    public class AddSocketToRoomAction : WebPubSubForSocketIOAction
     {
         /// <summary>
-        /// Target userId.
+        /// Target socketID.
         /// </summary>
-        public string UserId { get; set; }
+        public string SocketId { get; set; }
 
         /// <summary>
-        /// Target group name.
+        /// Target room name.
         /// </summary>
-        public string Group { get; set; }
+        public string Room { get; set; }
     }
 }

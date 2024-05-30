@@ -5,7 +5,7 @@ using System;
 
 using Microsoft.Azure.WebJobs.Description;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     /// <summary>
     /// Attribute used to bind a parameter to an Azure Web PubSub client negotiate websocket url.
@@ -25,11 +25,5 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
         /// </summary>
         [AutoResolve]
         public string Hub { get; set; }
-
-        /// <summary>
-        /// Client userId.
-        /// </summary>
-        [AutoResolve]
-        public string UserId { get; set; }
     }
 }

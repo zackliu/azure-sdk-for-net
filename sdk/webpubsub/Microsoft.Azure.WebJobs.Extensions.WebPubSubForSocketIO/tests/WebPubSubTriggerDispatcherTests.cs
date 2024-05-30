@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 {
     public class WebPubSubTriggerDispatcherTests
     {
@@ -123,14 +123,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
             Assert.AreEqual(expectedCode, response.StatusCode);
         }
 
-        private static WebPubSubTriggerDispatcher SetupDispatcher(string hub = TestHub, WebPubSubEventType type = TestType, string eventName = TestEvent, string connectionString = null)
+        private static WebPubSubForSocketIOTriggerDispatcher SetupDispatcher(string hub = TestHub, WebPubSubEventType type = TestType, string eventName = TestEvent, string connectionString = null)
         {
             var funcName = $"{hub}.{type}.{eventName}".ToLower();
             var wpsOptions = new WebPubSubFunctionsOptions
             {
                 ConnectionString = connectionString
             };
-            var dispatcher = new WebPubSubTriggerDispatcher(NullLogger.Instance, wpsOptions);
+            var dispatcher = new WebPubSubForSocketIOTriggerDispatcher(NullLogger.Instance, wpsOptions);
             var executor = new Mock<ITriggeredFunctionExecutor>();
             executor.Setup(f => f.TryExecuteAsync(It.IsAny<TriggeredFunctionData>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(new FunctionResult(true)));

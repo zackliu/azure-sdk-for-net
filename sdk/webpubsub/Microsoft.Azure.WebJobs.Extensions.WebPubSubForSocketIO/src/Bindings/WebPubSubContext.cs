@@ -5,7 +5,7 @@ using System.Net.Http;
 using Microsoft.Azure.WebPubSub.Common;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     /// <summary>
     /// Web PubSub service request context.

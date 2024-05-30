@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Azure.WebJobs.Description;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     /// <summary>
     /// Attribute used to bind a parameter to an Azure Web PubSub. The attribute supports to invoke
@@ -12,7 +12,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue)]
     [Binding]
-    public class WebPubSubAttribute : Attribute
+    public class WebPubSubForSocketIOAttribute : Attribute
     {
         /// <summary>
         /// The connection of target Web PubSub service.

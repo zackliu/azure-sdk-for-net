@@ -15,15 +15,15 @@ using Microsoft.Extensions.Logging;
 
 using NewtonsoftJsonLinq = Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
-    internal class WebPubSubTriggerDispatcher : IWebPubSubTriggerDispatcher
+    internal class WebPubSubForSocketIOTriggerDispatcher : IWebPubSubTriggerDispatcher
     {
         private readonly Dictionary<string, WebPubSubListener> _listeners = new(StringComparer.InvariantCultureIgnoreCase);
         private readonly ILogger _logger;
         private readonly WebPubSubFunctionsOptions _options;
 
-        public WebPubSubTriggerDispatcher(ILogger logger, WebPubSubFunctionsOptions options)
+        public WebPubSubForSocketIOTriggerDispatcher(ILogger logger, WebPubSubFunctionsOptions options)
         {
             _logger = logger;
             _options = options;

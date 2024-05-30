@@ -9,7 +9,7 @@ using Microsoft.Azure.WebPubSub.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     /// <summary>
     /// Abstract class of operation to invoke service.
@@ -36,21 +36,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
             return new AddConnectionToGroupAction
             {
                 ConnectionId = connectionId,
-                Group = group
-            };
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="AddUserToGroupAction"></see> for output binding.
-        /// </summary>
-        /// <param name="userId">Target userId.</param>
-        /// <param name="group">Target group.</param>
-        /// <returns>An instance of <see cref="AddUserToGroupAction"></see>.</returns>
-        public static AddUserToGroupAction CreateAddUserToGroupAction(string userId, string group)
-        {
-            return new AddUserToGroupAction
-            {
-                UserId = userId,
                 Group = group
             };
         }
@@ -103,23 +88,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="GrantPermissionAction"></see> for output binding.
-        /// </summary>
-        /// <param name="connectionId">Target connectionId.</param>
-        /// <param name="permission">Target permission.</param>
-        /// <param name="targetName">Target name.</param>
-        /// <returns>An instance of <see cref="GrantPermissionAction"></see>.</returns>
-        public static GrantPermissionAction CreateGrantPermissionAction(string connectionId, WebPubSubPermission permission, string targetName)
-        {
-            return new GrantPermissionAction
-            {
-                ConnectionId = connectionId,
-                Permission = permission,
-                TargetName = targetName
-            };
-        }
-
-        /// <summary>
         /// Creates an instance of <see cref="RemoveConnectionFromGroupAction"></see> for output binding.
         /// </summary>
         /// <param name="connectionId">Target connectionId.</param>
@@ -131,51 +99,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
             {
                 ConnectionId = connectionId,
                 Group = group
-            };
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="RemoveUserFromAllGroupsAction"></see> for output binding.
-        /// </summary>
-        /// <param name="userId">Target userId.</param>
-        /// <returns>An instance of <see cref="RemoveUserFromAllGroupsAction"></see>.</returns>
-        public static RemoveUserFromAllGroupsAction CreateRemoveUserFromAllGroupsAction(string userId)
-        {
-            return new RemoveUserFromAllGroupsAction
-            {
-                UserId = userId
-            };
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="RemoveUserFromGroupAction"></see> for output binding.
-        /// </summary>
-        /// <param name="userId">Target userId.</param>
-        /// <param name="group">Target group.</param>
-        /// <returns>An instance of <see cref="RemoveUserFromGroupAction"></see>.</returns>
-        public static RemoveUserFromGroupAction CreateRemoveUserFromGroupAction(string userId, string group)
-        {
-            return new RemoveUserFromGroupAction
-            {
-                UserId = userId,
-                Group = group
-            };
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="RevokePermissionAction"></see> for output binding.
-        /// </summary>
-        /// <param name="connectionId">Target connectionId.</param>
-        /// <param name="permission">Target permission.</param>
-        /// <param name="targetName">Target name.</param>
-        /// <returns>An instance of <see cref="RevokePermissionAction"></see>.</returns>
-        public static RevokePermissionAction CreateRevokePermissionAction(string connectionId, WebPubSubPermission permission, string targetName)
-        {
-            return new RevokePermissionAction
-            {
-                ConnectionId = connectionId,
-                Permission = permission,
-                TargetName = targetName
             };
         }
 
@@ -282,40 +205,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
                 Data = BinaryData.FromString(data),
                 DataType = dataType,
                 Excluded = excluded?.ToList(),
-            };
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="SendToUserAction"></see> for output binding.
-        /// </summary>
-        /// <param name="userId">Target userId.</param>
-        /// <param name="data">Message data.</param>
-        /// <param name="dataType">Message data type.</param>
-        /// <returns>An instance of <see cref="SendToUserAction"></see>.</returns>
-        public static SendToUserAction CreateSendToUserAction(string userId, BinaryData data, WebPubSubDataType dataType)
-        {
-            return new SendToUserAction
-            {
-                UserId = userId,
-                Data = data,
-                DataType = dataType
-            };
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="SendToUserAction"></see> for output binding.
-        /// </summary>
-        /// <param name="userId">Target userId.</param>
-        /// <param name="data">Message data.</param>
-        /// <param name="dataType">Message data type.</param>
-        /// <returns>An instance of <see cref="SendToUserAction"></see>.</returns>
-        public static SendToUserAction CreateSendToUserAction(string userId, string data, WebPubSubDataType dataType = WebPubSubDataType.Text)
-        {
-            return new SendToUserAction
-            {
-                UserId = userId,
-                Data = BinaryData.FromString(data),
-                DataType = dataType
             };
         }
     }

@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebPubSub.Common;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using static Microsoft.Azure.WebJobs.Extensions.WebPubSub.WebPubSubTriggerBinding;
+using static Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.WebPubSubTriggerBinding;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 {
     public class WebPubSubTriggerValueProviderTests
     {

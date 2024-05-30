@@ -9,13 +9,16 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using Microsoft.Azure.WebPubSub.Common;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     internal static class Utilities
     {
+        private static readonly string Separator = "~";
+        private static readonly string NamespaceGroupType = "0";
         public static MediaTypeHeaderValue GetMediaType(WebPubSubDataType dataType) => new(GetContentType(dataType));
 
         public static string GetContentType(WebPubSubDataType dataType) =>
@@ -225,6 +228,16 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
             }
             requestHosts = null;
             return false;
+        }
+
+        public static string GetGroupNameByNamespace(string @namespace)
+        {
+            return NamespaceGroupType + Separator + Base64UrlEncoder.Encode(@namespace) + Separator;
+        }
+
+        public static string GetGroupNameByNamespaceRoom(string @namespace, string room)
+        {
+            return $"{NamespaceGroupType}{Separator}{Base64UrlEncoder.Encode(@namespace)}{Separator}{Base64UrlEncoder.Encode(room)}";
         }
 
         private static Dictionary<string, BinaryData> GetStatesFromJson(JObject response)

@@ -9,7 +9,7 @@ using Microsoft.Azure.WebPubSub.Common;
 
 using SystemJson = System.Text.Json;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     internal class WebPubSubContextJsonConverter : JsonConverter<WebPubSubContext>
     {

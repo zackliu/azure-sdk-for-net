@@ -5,7 +5,7 @@ using Microsoft.Azure.WebJobs.Host.Listeners;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub.Tests
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 {
     public class TestListener : IListener
     {

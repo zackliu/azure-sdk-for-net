@@ -17,28 +17,30 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     [Extension("WebPubSubForSocketIO", "webpubsubforsocketio")]
-    internal class WebPubSubConfigProvider : IExtensionConfigProvider, IAsyncConverter<HttpRequestMessage, HttpResponseMessage>
+    internal class WebPubSubForSocketIOConfigProvider : IExtensionConfigProvider, IAsyncConverter<HttpRequestMessage, HttpResponseMessage>
     {
         private readonly IConfiguration _configuration;
         private readonly INameResolver _nameResolver;
         private readonly ILogger _logger;
         private readonly WebPubSubFunctionsOptions _options;
         private readonly IWebPubSubTriggerDispatcher _dispatcher;
+        private readonly SocketLifetimeStore _socketLifetimeStore;
 
-        public WebPubSubConfigProvider(
+        public WebPubSubForSocketIOConfigProvider(
             IOptions<WebPubSubFunctionsOptions> options,
             INameResolver nameResolver,
             ILoggerFactory loggerFactory,
             IConfiguration configuration)
         {
             _options = options.Value;
-            _logger = loggerFactory.CreateLogger(LogCategories.CreateTriggerCategory("WebPubSub"));
+            _logger = loggerFactory.CreateLogger(LogCategories.CreateTriggerCategory("WebPubSubForSocketIO"));
             _nameResolver = nameResolver;
             _configuration = configuration;
-            _dispatcher = new WebPubSubTriggerDispatcher(_logger, _options);
+            _dispatcher = new WebPubSubForSocketIOTriggerDispatcher(_logger, _options);
+            _socketLifetimeStore = new SocketLifetimeStore();
         }
 
         public void Initialize(ExtensionConfigContext context)
@@ -61,10 +63,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
             Exception webhookException = null;
             try
             {
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete preview
                 var url = context.GetWebhookHandler();
-#pragma warning restore CS0618 // Type or member is obsolete
-                _logger.LogInformation($"Registered Web PubSub negotiate Endpoint = {url?.GetLeftPart(UriPartial.Path)}");
+#pragma warning restore CS0618 // Type or member is obsolete preview
+                _logger.LogInformation($"Registered Web PubSub for Socket.IO negotiate Endpoint = {url?.GetLeftPart(UriPartial.Path)}");
             }
             catch (Exception ex)
             {
@@ -79,27 +81,24 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
             context
                 .AddConverter<WebPubSubConnection, JObject>(JObject.FromObject)
                 .AddConverter<WebPubSubContext, JObject>(JObject.FromObject)
-                .AddConverter<JObject, WebPubSubAction>(ConvertToWebPubSubOperation)
-                .AddConverter<JArray, WebPubSubAction[]>(ConvertToWebPubSubOperationArray);
+                .AddConverter<JObject, WebPubSubForSocketIOAction>(ConvertToWebPubSubOperation)
+                .AddConverter<JArray, WebPubSubForSocketIOAction[]>(ConvertToWebPubSubOperationArray);
 
             // Trigger binding
             context.AddBindingRule<WebPubSubTriggerAttribute>()
                 .BindToTrigger(new WebPubSubTriggerBindingProvider(_dispatcher, _nameResolver, _options, webhookException));
 
-            // Input binding
+            // Input binding -- For negotiation token
             var webpubsubConnectionAttributeRule = context.AddBindingRule<WebPubSubConnectionAttribute>();
             webpubsubConnectionAttributeRule.AddValidator(ValidateWebPubSubConnectionAttributeBinding);
             webpubsubConnectionAttributeRule.BindToInput(GetClientConnection);
 
-            var webPubSubRequestAttributeRule = context.AddBindingRule<WebPubSubContextAttribute>();
-            webPubSubRequestAttributeRule.Bind(new WebPubSubContextBindingProvider(_nameResolver, _configuration, _options));
-
             // Output binding
-            var webPubSubAttributeRule = context.AddBindingRule<WebPubSubAttribute>();
+            var webPubSubAttributeRule = context.AddBindingRule<WebPubSubForSocketIOAttribute>();
             webPubSubAttributeRule.AddValidator(ValidateWebPubSubAttributeBinding);
             webPubSubAttributeRule.BindToCollector(CreateCollector);
 
-            _logger.LogInformation("Azure Web PubSub binding initialized");
+            _logger.LogInformation("Azure Web PubSub for Socket.IO binding initialized");
         }
 
         public Task<HttpResponseMessage> ConvertAsync(HttpRequestMessage input, CancellationToken cancellationToken)
@@ -114,30 +113,30 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
                 $"{nameof(WebPubSubConnectionAttribute)}.{nameof(WebPubSubConnectionAttribute.Connection)}");
         }
 
-        private void ValidateWebPubSubAttributeBinding(WebPubSubAttribute attribute, Type type)
+        private void ValidateWebPubSubAttributeBinding(WebPubSubForSocketIOAttribute attribute, Type type)
         {
             ValidateConnectionString(
                 attribute.Connection,
-                $"{nameof(WebPubSubAttribute)}.{nameof(WebPubSubAttribute.Connection)}");
+                $"{nameof(WebPubSubForSocketIOAttribute)}.{nameof(WebPubSubForSocketIOAttribute.Connection)}");
         }
 
-        internal WebPubSubService GetService(WebPubSubAttribute attribute)
+        internal WebPubSubService GetService(WebPubSubForSocketIOAttribute attribute)
         {
             var connectionString = Utilities.FirstOrDefault(attribute.Connection, _options.ConnectionString);
             var hubName = Utilities.FirstOrDefault(attribute.Hub, _options.Hub);
             return new WebPubSubService(connectionString, hubName);
         }
 
-        private IAsyncCollector<WebPubSubAction> CreateCollector(WebPubSubAttribute attribute)
+        private IAsyncCollector<WebPubSubForSocketIOAction> CreateCollector(WebPubSubForSocketIOAttribute attribute)
         {
-            return new WebPubSubAsyncCollector(GetService(attribute));
+            return new WebPubSubForSocketIOAsyncCollector(GetService(attribute), _socketLifetimeStore);
         }
 
         private WebPubSubConnection GetClientConnection(WebPubSubConnectionAttribute attribute)
         {
             var hub = Utilities.FirstOrDefault(attribute.Hub, _options.Hub);
             var service = new WebPubSubService(attribute.Connection, hub);
-            return service.GetClientConnection(attribute.UserId);
+            return service.GetClientConnection();
         }
 
         private void ValidateConnectionString(string attributeConnectionString, string attributeConnectionStringName)
@@ -158,17 +157,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
                 {
                     new BinaryDataJsonConverter(),
                     new ConnectionStatesNewtonsoftConverter(),
-                    new WebPubSubDataTypeJsonConverter(),
-                    new WebPubSubEventTypeJsonConverter(),
                 },
             };
         }
 
-        internal static WebPubSubAction ConvertToWebPubSubOperation(JObject input)
+        internal static WebPubSubForSocketIOAction ConvertToWebPubSubOperation(JObject input)
         {
             if (input.TryGetValue("actionName", StringComparison.OrdinalIgnoreCase, out var kind))
             {
-                var opeartions = typeof(WebPubSubAction).Assembly.GetTypes().Where(t => t.BaseType == typeof(WebPubSubAction));
+                var opeartions = typeof(WebPubSubForSocketIOAction).Assembly.GetTypes().Where(t => t.BaseType == typeof(WebPubSubForSocketIOAction));
                 foreach (var item in opeartions)
                 {
                     if (TryToWebPubSubOperation(input, kind.ToString() + "Action", item, out var operation))
@@ -180,9 +177,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
             throw new ArgumentException($"Not supported WebPubSubOperation: {kind}.");
         }
 
-        internal static WebPubSubAction[] ConvertToWebPubSubOperationArray(JArray input)
+        internal static WebPubSubForSocketIOAction[] ConvertToWebPubSubOperationArray(JArray input)
         {
-            var result = new List<WebPubSubAction>();
+            var result = new List<WebPubSubForSocketIOAction>();
             foreach (var item in input)
             {
                 result.Add(ConvertToWebPubSubOperation((JObject)item));
@@ -190,37 +187,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
             return result.ToArray();
         }
 
-        private static bool TryToWebPubSubOperation(JObject input, string actionName, Type operationType, out WebPubSubAction operation)
+        private static bool TryToWebPubSubOperation(JObject input, string actionName, Type operationType, out WebPubSubForSocketIOAction operation)
         {
-            // message events need check dataType.
-            if (actionName.StartsWith("Send", StringComparison.OrdinalIgnoreCase))
-            {
-                CheckDataType(input);
-            }
             if (actionName.Equals(operationType.Name, StringComparison.OrdinalIgnoreCase))
             {
-                operation = input.ToObject(operationType) as WebPubSubAction;
+                operation = input.ToObject(operationType) as WebPubSubForSocketIOAction;
                 return true;
             }
             operation = null;
             return false;
-        }
-
-        // Binary data accepts ArrayBuffer only, script language checks.
-        private static void CheckDataType(JObject input)
-        {
-            if (input.TryGetValue("dataType", StringComparison.OrdinalIgnoreCase, out var value))
-            {
-                var dataType = value.ToObject<WebPubSubDataType>();
-
-                input.TryGetValue("data", StringComparison.OrdinalIgnoreCase, out var data);
-
-                if (dataType == WebPubSubDataType.Binary &&
-                    !(data["type"] != null && data["type"].ToString().Equals("Buffer", StringComparison.OrdinalIgnoreCase)))
-                {
-                    throw new ArgumentException("WebPubSubDataType is binary, please use ArrayBuffer as message data type.");
-                }
-            }
         }
     }
 }

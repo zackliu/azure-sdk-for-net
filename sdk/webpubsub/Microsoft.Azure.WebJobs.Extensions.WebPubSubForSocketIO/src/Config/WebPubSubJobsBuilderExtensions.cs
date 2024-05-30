@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.WebPubSub;
+using Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.Hosting
@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Hosting
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.AddExtension<WebPubSubConfigProvider>()
+            builder.AddExtension<WebPubSubForSocketIOConfigProvider>()
                 .ConfigureOptions<WebPubSubFunctionsOptions>(ApplyConfiguration);
             return builder;
         }

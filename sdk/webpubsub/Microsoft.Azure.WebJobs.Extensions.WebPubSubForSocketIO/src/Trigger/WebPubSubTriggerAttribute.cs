@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Azure.WebPubSub.Common;
 using Microsoft.Azure.WebJobs.Description;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     /// <summary>
     /// Attribute used to bind a parameter to an Azure Web PubSub when a Web PubSub request is coming.

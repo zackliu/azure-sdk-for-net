@@ -3,7 +3,7 @@
 
 using Azure.Messaging.WebPubSub;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     internal class WebPubSubService : IWebPubSubService
     {

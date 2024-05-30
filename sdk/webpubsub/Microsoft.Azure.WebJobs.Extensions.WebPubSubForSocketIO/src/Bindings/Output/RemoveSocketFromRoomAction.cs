@@ -4,22 +4,22 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSub
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     /// <summary>
-    /// Operation to remove a connection from group.
+    /// Operation to remove socket from a room.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class RemoveConnectionFromGroupAction : WebPubSubAction
+    public class RemoveSocketFromRoomAction : WebPubSubForSocketIOAction
     {
         /// <summary>
-        /// Target connectionId.
+        /// Target socketId.
         /// </summary>
-        public string ConnectionId { get; set; }
+        public string SocketId { get; set; }
 
         /// <summary>
-        /// Target group name.
+        /// Target room name.
         /// </summary>
-        public string Group { get; set; }
+        public string Room { get; set; }
     }
 }
