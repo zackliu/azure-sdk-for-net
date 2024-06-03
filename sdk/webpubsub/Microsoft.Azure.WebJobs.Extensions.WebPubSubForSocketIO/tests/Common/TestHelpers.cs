@@ -20,7 +20,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 {
     internal static class TestHelpers
     {
-        public static IHost NewHost(Type type, WebPubSubConfigProvider ext = null, Dictionary<string, string> configuration = null)
+        public static IHost NewHost(Type type, WebPubSubForSocketIOConfigProvider ext = null, Dictionary<string, string> configuration = null)
         {
             var builder = new HostBuilder()
                 .ConfigureServices(services =>
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
                 })
                 .ConfigureWebJobs(webJobsBuilder =>
                 {
-                    webJobsBuilder.AddWebPubSub();
+                    webJobsBuilder.AddWebPubSubForSocketIO();
                     webJobsBuilder.UseHostId(Guid.NewGuid().ToString("n"));
                 })
                 .ConfigureLogging(logging =>

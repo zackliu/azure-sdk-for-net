@@ -25,12 +25,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
             throw new NotImplementedException();
         }
 
-        private IAsyncCollector<WebPubSubAction> CreateTestCollector(WebPubSubForSocketIOAttribute attribute)
+        private IAsyncCollector<WebPubSubForSocketIOAction> CreateTestCollector(WebPubSubForSocketIOAttribute attribute)
         {
             var service = new Mock<WebPubSubServiceClient>();
             //service.Setup(x => x.SendToAll(It.IsAny<RequestContent>(), It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
             //    .Returns(new MockResponse(200));
-            return new WebPubSubAsyncCollector(new WebPubSubService(service.Object));
+            var store = new SocketLifetimeStore();
+            return new WebPubSubForSocketIOAsyncCollector(new WebPubSubService(service.Object), store);
         }
 
         [Binding]

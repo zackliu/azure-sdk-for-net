@@ -10,16 +10,13 @@
 
   <ItemGroup>
     <Compile Include="..\..\Microsoft.Azure.WebPubSub.Common\src\Internal\BinaryDataJsonConverter.cs" Link="BinaryDataJsonConverter.cs" />
-    <Compile Include="..\samples\WebPubSubConnectionBindingFunction.cs" Link="WebPubSubConnectionBindingFunction.cs" />
-    <Compile Include="..\samples\WebPubSubOutputBindingFunction.cs" Link="WebPubSubOutputBindingFunction.cs" />
-    <Compile Include="..\samples\WebPubSubTriggerFunction.cs" Link="WebPubSubTriggerFunction.cs" />
-    <Compile Include="..\samples\WebPubSubTriggerReturnValueFunction.cs" Link="WebPubSubTriggerReturnValueFunction.cs" />
+    <!--<Compile Include="..\samples\WebPubSubConnectionBindingFunction.cs" Link="WebPubSubConnectionBindingFunction.cs" />-->
+    <!--<Compile Include="..\samples\WebPubSubOutputBindingFunction.cs" Link="WebPubSubOutputBindingFunction.cs" />-->
+    <!--<Compile Include="..\samples\WebPubSubTriggerFunction.cs" Link="WebPubSubTriggerFunction.cs" />-->
+    <!--<Compile Include="..\samples\WebPubSubTriggerReturnValueFunction.cs" Link="WebPubSubTriggerReturnValueFunction.cs" />-->
   </ItemGroup>
 
   <!-- Reference the Client Library -->
-  <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" />
@@ -27,5 +24,9 @@
     <PackageReference Include="Moq" />
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit3TestAdapter" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.csproj" />
   </ItemGroup>
 </Project>
