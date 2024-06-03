@@ -5,7 +5,7 @@ using Azure.Messaging.WebPubSub;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
-    internal interface IWebPubSubService
+    internal interface IWebPubSubForSocketIOService
     {
         public WebPubSubServiceClient Client { get; }
     }

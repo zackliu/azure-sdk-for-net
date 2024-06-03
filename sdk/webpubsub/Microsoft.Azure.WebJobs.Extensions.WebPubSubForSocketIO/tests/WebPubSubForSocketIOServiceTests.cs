@@ -5,25 +5,23 @@ using NUnit.Framework;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 {
-    public class WebPubSubServiceTests
+    public class WebPubSubForSocketIOServiceTests
     {
         private const string NormConnectionString = "Endpoint=http://localhost;Port=8080;AccessKey=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGH;Version=1.0;";
         private const string SecConnectionString = "Endpoint=https://abc;AccessKey=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGH;Version=1.0;";
 
-        [TestCase(NormConnectionString, "ws://localhost:8080/client/hubs/testHub")]
-        [TestCase(SecConnectionString, "wss://abc/client/hubs/testHub")]
-        public void TestWebPubSubConnection_Scheme(string connectionString, string expectedBaseUrl)
+        [TestCase(NormConnectionString, "ws://localhost:8080/", "/client/hubs/testHub")]
+        [TestCase(SecConnectionString, "wss://abc/", "/client/hubs/testHub")]
+        public void TestWebPubSubConnection_Scheme(string connectionString, string expectedEndpoint, string expectedPath)
         {
-            var service = new WebPubSubService(connectionString, "testHub");
+            var service = new WebPubSubForSocketIOService(connectionString, "testHub");
 
             var clientConnection = service.GetClientConnection();
 
             Assert.NotNull(clientConnection);
-            Assert.AreEqual(expectedBaseUrl, clientConnection.BaseUri.AbsoluteUri);
-            Assert.NotNull(clientConnection.AccessToken);
-
-            var absoluteUrl = $"{expectedBaseUrl}?access_token={clientConnection.AccessToken}";
-            Assert.AreEqual(absoluteUrl, clientConnection.Uri.AbsoluteUri);
+            Assert.AreEqual(expectedEndpoint, clientConnection.Endpoint.AbsoluteUri);
+            Assert.AreEqual(expectedPath, clientConnection.Path);
+            Assert.NotNull(clientConnection.Token);
         }
 
         [TestCase]

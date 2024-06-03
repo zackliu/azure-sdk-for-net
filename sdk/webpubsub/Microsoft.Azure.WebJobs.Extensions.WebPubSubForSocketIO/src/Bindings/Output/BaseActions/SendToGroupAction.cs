@@ -7,7 +7,7 @@ using Microsoft.Azure.WebPubSub.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.BaseActions
 {
     /// <summary>
     /// Operation to send message to a group.

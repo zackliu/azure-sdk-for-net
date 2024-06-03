@@ -4,6 +4,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
@@ -26,7 +27,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <summary>
         /// Message to send.
         /// </summary>
-        [JsonConverter(typeof(BinaryDataJsonConverter))]
-        public BinaryData Data { get; set; }
+        public IList<string> Data { get; set; }
     }
 }

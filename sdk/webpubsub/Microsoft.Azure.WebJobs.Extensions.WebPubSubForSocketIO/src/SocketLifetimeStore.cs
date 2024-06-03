@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,19 +13,24 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
     /// </summary>
     internal class SocketLifetimeStore
     {
+        private readonly ConcurrentDictionary<string, (string, string)> _store = new();
+
         public bool TryFindConnectionIdBySocketId(string socketId, out string connectionId, out string @namespace)
         {
-            throw new NotImplementedException();
+            var rst = _store.TryGetValue(socketId, out var val);
+            connectionId = val.Item1;
+            @namespace = val.Item2;
+            return rst;
         }
 
         public void AddSocket(string socketId, string @namespace, string connectionId)
         {
-            throw new NotImplementedException();
+            _store.AddOrUpdate(socketId, (connectionId, @namespace), (key, oldValue) => (connectionId, @namespace));
         }
 
         public bool RemoveSocket(string socketId)
         {
-            throw new NotImplementedException();
+            return _store.TryRemove(socketId, out _);
         }
     }
 }

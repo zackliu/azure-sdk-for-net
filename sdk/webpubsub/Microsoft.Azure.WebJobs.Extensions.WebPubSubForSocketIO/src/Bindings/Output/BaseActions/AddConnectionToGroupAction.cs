@@ -4,7 +4,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
+namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.BaseActions
 {
     /// <summary>
     /// Operation to add connectionId to a group.

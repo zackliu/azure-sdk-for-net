@@ -9,16 +9,18 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Core;
 using Azure.Messaging.WebPubSub;
+using Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.BaseActions;
 using Microsoft.Azure.WebPubSub.Common;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     internal class WebPubSubForSocketIOAsyncCollector : IAsyncCollector<WebPubSubForSocketIOAction>
     {
-        private readonly IWebPubSubService _service;
+        private readonly IWebPubSubForSocketIOService _service;
         private readonly SocketLifetimeStore _socketLifetimeStore;
 
-        internal WebPubSubForSocketIOAsyncCollector(IWebPubSubService service, SocketLifetimeStore socketLifetimeStore)
+        internal WebPubSubForSocketIOAsyncCollector(IWebPubSubForSocketIOService service, SocketLifetimeStore socketLifetimeStore)
         {
             _service = service ?? throw new ArgumentNullException(nameof(service));
             _socketLifetimeStore = socketLifetimeStore ?? throw new ArgumentNullException(nameof(socketLifetimeStore));
@@ -39,7 +41,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                     {
                         if (!_socketLifetimeStore.TryFindConnectionIdBySocketId(addToRoom.SocketId, out var connId, out var @namespace))
                         {
-                            throw new ArgumentException($"SocketId {addToRoom.SocketId} not found.");
+                            throw new InvalidOperationException($"SocketId {addToRoom.SocketId} not found.");
                         }
                         await SendToService(new AddConnectionToGroupAction
                         {
@@ -75,11 +77,12 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                     {
                         var data = EngineIOProtocol.EncodePacket(new SocketIOPacket(SocketIOPacketType.Event,
                             sendToNamespace.Namespace,
-                            sendToNamespace.Data.ToString()));
-                        await SendToService(new SendToAllAction
+                            JsonConvert.SerializeObject(sendToNamespace.Data)));
+                        await SendToService(new SendToGroupAction
                         {
                             Data = BinaryData.FromBytes(data),
                             DataType = WebPubSubDataType.Text,
+                            Group = Utilities.GetGroupNameByNamespace(sendToNamespace.Namespace),
                         }, cancellationToken).ConfigureAwait(false);
                         break;
                     }
@@ -92,7 +95,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 
                         var data = EngineIOProtocol.EncodePacket(new SocketIOPacket(SocketIOPacketType.Event,
                             sendToRoom.Namespace,
-                            sendToRoom.Data.ToString()));
+                            JsonConvert.SerializeObject(sendToRoom.Data)));
 
                         if (sendToRoom.Rooms.Count == 1)
                         {
@@ -119,7 +122,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                     {
                         var data = EngineIOProtocol.EncodePacket(new SocketIOPacket(SocketIOPacketType.Event,
                             sendToSocket.Namespace,
-                            sendToSocket.Data.ToString()));
+                            JsonConvert.SerializeObject(sendToSocket.Data)));
 
                         if (!_socketLifetimeStore.TryFindConnectionIdBySocketId(sendToSocket.SocketId, out var connId, out var @namespace))
                         {
@@ -203,7 +206,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
             }
 
             var filter = $"'{Utilities.GetGroupNameByNamespaceRoom(@namespace, rooms[0])}' in groups";
-            for (int i = 0; i < rooms.Count; i++)
+            for (int i = 1; i < rooms.Count; i++)
             {
                 filter += $" or '{Utilities.GetGroupNameByNamespaceRoom(@namespace, rooms[i])}' in groups";
             }

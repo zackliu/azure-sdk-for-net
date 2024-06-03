@@ -79,7 +79,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 
             // bindings
             context
-                .AddConverter<WebPubSubConnection, JObject>(JObject.FromObject)
+                .AddConverter<SocketIONegotiateResult, JObject>(JObject.FromObject)
                 .AddConverter<WebPubSubContext, JObject>(JObject.FromObject)
                 .AddConverter<JObject, WebPubSubForSocketIOAction>(ConvertToWebPubSubOperation)
                 .AddConverter<JArray, WebPubSubForSocketIOAction[]>(ConvertToWebPubSubOperationArray);
@@ -120,11 +120,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                 $"{nameof(WebPubSubForSocketIOAttribute)}.{nameof(WebPubSubForSocketIOAttribute.Connection)}");
         }
 
-        internal WebPubSubService GetService(WebPubSubForSocketIOAttribute attribute)
+        internal WebPubSubForSocketIOService GetService(WebPubSubForSocketIOAttribute attribute)
         {
             var connectionString = Utilities.FirstOrDefault(attribute.Connection, _options.ConnectionString);
             var hubName = Utilities.FirstOrDefault(attribute.Hub, _options.Hub);
-            return new WebPubSubService(connectionString, hubName);
+            return new WebPubSubForSocketIOService(connectionString, hubName);
         }
 
         private IAsyncCollector<WebPubSubForSocketIOAction> CreateCollector(WebPubSubForSocketIOAttribute attribute)
@@ -132,10 +132,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
             return new WebPubSubForSocketIOAsyncCollector(GetService(attribute), _socketLifetimeStore);
         }
 
-        private WebPubSubConnection GetClientConnection(WebPubSubConnectionAttribute attribute)
+        private SocketIONegotiateResult GetClientConnection(WebPubSubConnectionAttribute attribute)
         {
             var hub = Utilities.FirstOrDefault(attribute.Hub, _options.Hub);
-            var service = new WebPubSubService(attribute.Connection, hub);
+            var service = new WebPubSubForSocketIOService(attribute.Connection, hub);
             return service.GetClientConnection();
         }
 

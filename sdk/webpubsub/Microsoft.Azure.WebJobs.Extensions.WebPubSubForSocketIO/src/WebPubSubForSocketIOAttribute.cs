@@ -8,7 +8,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     /// <summary>
     /// Attribute used to bind a parameter to an Azure Web PubSub. The attribute supports to invoke
-    /// multiple kinds of operations to service. For details, <see cref="WebPubSubAction"/>.
+    /// multiple kinds of operations to service. For details, <see cref="WebPubSubForSocketIOAction"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue)]
     [Binding]

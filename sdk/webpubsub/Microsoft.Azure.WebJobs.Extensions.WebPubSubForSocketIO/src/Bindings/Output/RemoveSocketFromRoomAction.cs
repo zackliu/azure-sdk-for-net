@@ -21,5 +21,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// Target room name.
         /// </summary>
         public string Room { get; set; }
+
+        /// <summary>
+        /// Target namespace
+        /// </summary>
+        public string Namespace { get; set; }
     }
 }

@@ -31,7 +31,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
             //service.Setup(x => x.SendToAll(It.IsAny<RequestContent>(), It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
             //    .Returns(new MockResponse(200));
             var store = new SocketLifetimeStore();
-            return new WebPubSubForSocketIOAsyncCollector(new WebPubSubService(service.Object), store);
+            return new WebPubSubForSocketIOAsyncCollector(new WebPubSubForSocketIOService(service.Object), store);
         }
 
         [Binding]

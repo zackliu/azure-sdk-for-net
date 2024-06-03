@@ -5,28 +5,28 @@ using Azure.Messaging.WebPubSub;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
-    internal class WebPubSubService : IWebPubSubService
+    internal class WebPubSubForSocketIOService : IWebPubSubForSocketIOService
     {
         private readonly WebPubSubServiceClient _client;
 
-        public WebPubSubService(string connectionString, string hub)
+        public WebPubSubForSocketIOService(string connectionString, string hub)
         {
             _client = new WebPubSubServiceClient(connectionString, hub);
         }
 
         // For tests.
-        public WebPubSubService(WebPubSubServiceClient client)
+        public WebPubSubForSocketIOService(WebPubSubServiceClient client)
         {
             _client = client;
         }
 
         public WebPubSubServiceClient Client => _client;
 
-        internal WebPubSubConnection GetClientConnection(string userId = null, string[] roles = null)
+        internal SocketIONegotiateResult GetClientConnection()
         {
-            var url = _client.GetClientAccessUri(userId: userId, roles: roles);
+            var url = _client.GetClientAccessUri();
 
-            return new WebPubSubConnection(url);
+            return new SocketIONegotiateResult(url);
         }
     }
 }

@@ -28,7 +28,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <summary>
         /// Message to send.
         /// </summary>
-        [JsonConverter(typeof(BinaryDataJsonConverter))]
-        public BinaryData Data { get; set; }
+        public IList<string> Data { get; set; }
     }
 }

@@ -104,29 +104,29 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
             }
 
             public static void TestWebPubSubInputConnection(
-                [WebPubSubConnection(Hub = "chat")] WebPubSubConnection connection)
+                [WebPubSubConnection(Hub = "chat")] SocketIONegotiateResult connection)
             {
                 // Valid case use default url for verification.
-                Assert.AreEqual("wss://abc/client/hubs/chat", connection.BaseUri.AbsoluteUri);
+                Assert.AreEqual("wss://abc/client/hubs/chat", connection.Endpoint.AbsoluteUri);
             }
 
             public static async Task TestWebPubSubOutput(
-                [WebPubSubForSocketIO(Hub = "chat")] IAsyncCollector<WebPubSubAction> operation)
+                [WebPubSubForSocketIO(Hub = "chat")] IAsyncCollector<WebPubSubForSocketIOAction> operation)
             {
-                await operation.AddAsync(new SendToAllAction
+                await operation.AddAsync(new SendToNamespaceAction
                 {
-                    Data = TestMessage,
-                    DataType = WebPubSubDataType.Text
+                    Data = new[] { "arg1" },
+                    Namespace = "/",
                 });
             }
 
             public static async Task TestWebPubSubOutputMissingHub(
-                [WebPubSubForSocketIO] IAsyncCollector<WebPubSubAction> operation)
+                [WebPubSubForSocketIO] IAsyncCollector<WebPubSubForSocketIOAction> operation)
             {
-                await operation.AddAsync(new SendToAllAction
+                await operation.AddAsync(new SendToNamespaceAction
                 {
-                    Data = TestMessage,
-                    DataType = WebPubSubDataType.Text
+                    Data = new[] { "arg1" },
+                    Namespace = "/",
                 });
             }
 

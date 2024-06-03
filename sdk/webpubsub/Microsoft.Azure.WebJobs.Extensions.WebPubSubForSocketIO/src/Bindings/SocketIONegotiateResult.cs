@@ -13,35 +13,35 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
     /// Connection information for client to create WebSocket connection with service.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class WebPubSubConnection
+    public class SocketIONegotiateResult
     {
         /// <summary>
         /// Create an instance of the connection information.
         /// </summary>
         /// <param name="uri"></param>
-        public WebPubSubConnection(Uri uri)
+        public SocketIONegotiateResult(Uri uri)
         {
-            Uri = uri;
-
-            BaseUri = new Uri($"{uri.Scheme}://{uri.Authority}{uri.AbsolutePath}");
-            AccessToken = HttpUtility.ParseQueryString(uri.Query)["access_token"];
+            Endpoint = new Uri($"{uri.Scheme}://{uri.Authority}");
+            Path = uri.AbsolutePath;
+            Token = HttpUtility.ParseQueryString(uri.Query)["access_token"];
         }
 
         /// <summary>
-        /// Base Uri of the websocket connection.
+        /// The endpoint for socket.io clients.
         /// </summary>
-        [JsonProperty("baseUrl")]
-        public Uri BaseUri { get;}
+        [JsonProperty("endpoint")]
+        public Uri Endpoint { get;}
 
         /// <summary>
-        /// Uri with accessToken of the websocket connection.
+        /// The path for socket.io clients.
         /// </summary>
-        [JsonProperty("url")]
-        public Uri Uri { get;}
+        [JsonProperty("path")]
+        public string Path { get;}
 
         /// <summary>
-        /// Access token of the websocket connection.
+        /// The access token for socket.io clients.
         /// </summary>
-        public string AccessToken { get;}
+        [JsonProperty("token")]
+        public string Token { get;}
     }
 }

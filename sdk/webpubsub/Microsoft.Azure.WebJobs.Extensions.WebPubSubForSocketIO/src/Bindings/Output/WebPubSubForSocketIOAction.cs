@@ -27,13 +27,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <summary>
         /// Creates an instance of <see cref="AddSocketToRoomAction"></see> for output binding.
         /// </summary>
+        /// <param name="namespace">Target namespace.</param>
         /// <param name="socketId">Target socketId.</param>
         /// <param name="room">Target roome.</param>
         /// <returns>An instance of <see cref="AddSocketToRoomAction"></see>.</returns>
-        public static AddSocketToRoomAction CreateAddSocketToRoomAction(string socketId, string room)
+        public static AddSocketToRoomAction CreateAddSocketToRoomAction(string @namespace, string socketId, string room)
         {
             return new AddSocketToRoomAction
             {
+                Namespace = @namespace,
                 SocketId = socketId,
                 Room = room
             };
@@ -42,13 +44,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <summary>
         /// Creates an instance of <see cref="RemoveSocketFromRoomAction"></see> for output binding.
         /// </summary>
+        /// <param name="namespace">Target namespace.</param>
         /// <param name="socketId">Target socketId.</param>
         /// <param name="room">Target roome.</param>
         /// <returns>An instance of <see cref="RemoveSocketFromRoomAction"></see>.</returns>
-        public static RemoveSocketFromRoomAction CreateRemoveSocketFromRoomAction(string socketId, string room)
+        public static RemoveSocketFromRoomAction CreateRemoveSocketFromRoomAction(string @namespace, string socketId, string room)
         {
             return new RemoveSocketFromRoomAction
             {
+                Namespace = @namespace,
                 SocketId = socketId,
                 Room = room
             };
@@ -75,11 +79,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <param name="data">SocketIO data.</param>
         /// <param name="namespace">Target namespace</param>
         /// <returns>An instance of <see cref="SendToNamespaceAction"></see>.</returns>
-        public static SendToNamespaceAction CreateSendToNamespaceAction(BinaryData data, string @namespace)
+        public static SendToNamespaceAction CreateSendToNamespaceAction(IEnumerable<string> data, string @namespace)
         {
             return new SendToNamespaceAction
             {
-                Data = data,
+                Data = data.ToArray(),
                 Namespace = @namespace,
             };
         }
@@ -91,11 +95,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <param name="namespace">Target namespace</param>
         /// <param name="rooms">Target rooms</param>
         /// <returns>An instance of <see cref="SendToNamespaceAction"></see>.</returns>
-        public static SendToRoomsAction CreateSendToRoomsAction(BinaryData data, string @namespace, IEnumerable<string> rooms)
+        public static SendToRoomsAction CreateSendToRoomsAction(IEnumerable<string> data, string @namespace, IEnumerable<string> rooms)
         {
             return new SendToRoomsAction
             {
-                Data = data,
+                Data = data.ToArray(),
                 Namespace = @namespace,
                 Rooms = rooms.ToArray(),
             };
@@ -106,13 +110,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// </summary>
         /// <param name="data">SocketIO data.</param>
         /// <param name="socketId">Target socket</param>
+        /// <param name="namespace">Target namespace</param>
         /// <returns>An instance of <see cref="SendToSocketAction"></see>.</returns>
-        public static SendToSocketAction CreateSendToSocketAction(BinaryData data, string socketId)
+        public static SendToSocketAction CreateSendToSocketAction(IEnumerable<string> data, string @namespace, string socketId)
         {
             return new SendToSocketAction
             {
-                Data = data,
+                Data = data.ToArray(),
                 SocketId = socketId,
+                Namespace = @namespace,
             };
         }
     }
