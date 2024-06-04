@@ -15,7 +15,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 #pragma warning disable CS0618 // Type or member is obsolete
     [Binding(TriggerHandlesReturnValue = true)]
 #pragma warning restore CS0618 // Type or member is obsolete
-    public class WebPubSubTriggerAttribute : Attribute
+    public class WebPubSubForSocketIOTriggerAttribute : Attribute
     {
         /// <summary>
         /// Attribute used to bind a parameter to an Azure Web PubSub, when an request is from Azure Web PubSub service.
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <param name="eventType">Target event name of the request.</param>
         /// <param name="eventName">Target event type of the request.</param>
         /// <param name="connections">Connection strings of allowed upstreams for signature checks.</param>
-        public WebPubSubTriggerAttribute(string hub, WebPubSubEventType eventType, string eventName, params string[] connections)
+        public WebPubSubForSocketIOTriggerAttribute(string hub, WebPubSubEventType eventType, string eventName, params string[] connections)
         {
             Hub = hub;
             EventName = eventName;
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <param name="hub">Target hub name of the request.</param>
         /// <param name="eventType">Target event name of the request.</param>
         /// <param name="eventName">Target event type of the request.</param>
-        public WebPubSubTriggerAttribute(string hub, WebPubSubEventType eventType, string eventName)
+        public WebPubSubForSocketIOTriggerAttribute(string hub, WebPubSubEventType eventType, string eventName)
             : this(hub, eventType, eventName, null)
         {
         }
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <param name="eventType">Target event name of the request.</param>
         /// <param name="eventName">Target event type of the request.</param>
         /// <param name="connections">Connection strings of allowed upstreams for signature checks.</param>
-        public WebPubSubTriggerAttribute(WebPubSubEventType eventType, string eventName, params string[] connections)
+        public WebPubSubForSocketIOTriggerAttribute(WebPubSubEventType eventType, string eventName, params string[] connections)
             : this("", eventType, eventName, connections)
         {
         }
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// </summary>
         /// <param name="eventType">Target event name of the request.</param>
         /// <param name="eventName">Target event type of the request.</param>
-        public WebPubSubTriggerAttribute(WebPubSubEventType eventType, string eventName)
+        public WebPubSubForSocketIOTriggerAttribute(WebPubSubEventType eventType, string eventName)
             : this ("", eventType, eventName)
         {
         }

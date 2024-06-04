@@ -14,7 +14,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 {
     public class WebPubSubTriggerBindingProviderTests
     {
-        private readonly WebPubSubTriggerBindingProvider _provider;
+        private readonly WebPubSubForSocketIOTriggerBindingProvider _provider;
         private readonly IConfiguration _configuration;
 
         private const string TestHub = "test_hub";
@@ -27,15 +27,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
                 .Build();
             _configuration["testhub"] = TestHub;
             var resolver = new DefaultNameResolver(_configuration);
-            var mockDispater = new Mock<IWebPubSubTriggerDispatcher>(MockBehavior.Strict);
+            var mockDispater = new Mock<IWebPubSubForSocketIOTriggerDispatcher>(MockBehavior.Strict);
             var config = new WebPubSubFunctionsOptions();
-            _provider = new WebPubSubTriggerBindingProvider(mockDispater.Object, resolver, config, null);
+            _provider = new WebPubSubForSocketIOTriggerBindingProvider(mockDispater.Object, resolver, config, null);
         }
 
         [TestCase]
         public void ResolveTriggerAttributeTest()
         {
-            var attribute = new WebPubSubTriggerAttribute("%testhub%", WebPubSubEventType.System, "testevent");
+            var attribute = new WebPubSubForSocketIOTriggerAttribute("%testhub%", WebPubSubEventType.System, "testevent");
             var resolvedAttr = _provider.GetResolvedAttribute(attribute);
             Assert.AreEqual(resolvedAttr.Hub, TestHub);
             Assert.AreEqual(resolvedAttr.EventName, "testevent");
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         [TestCase]
         public void DefaultTriggerAttributeTest()
         {
-            var attribute = new WebPubSubTriggerAttribute("defaulthub", WebPubSubEventType.System, "testevent");
+            var attribute = new WebPubSubForSocketIOTriggerAttribute("defaulthub", WebPubSubEventType.System, "testevent");
             var resolvedAttr = _provider.GetResolvedAttribute(attribute);
             Assert.AreEqual(resolvedAttr.Hub, "defaulthub");
             Assert.AreEqual(resolvedAttr.EventName, "testevent");
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         [TestCase]
         public void ResolveTriggerAttributeTest_NotConfigureThrows()
         {
-            var attribute = new WebPubSubTriggerAttribute("%nullhub%", WebPubSubEventType.System, "testevent");
+            var attribute = new WebPubSubForSocketIOTriggerAttribute("%nullhub%", WebPubSubEventType.System, "testevent");
             Assert.Throws<ArgumentException>(() => _provider.GetResolvedAttribute(attribute),
                 "Failed to resolve substitute configure: %nullhub%, please add.");
         }
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         }
 
         public static void TestFunc(
-            [WebPubSubTrigger("%testhub%", WebPubSubEventType.System, "testevent")]WebPubSubConnectionContext context)
+            [WebPubSubForSocketIOTrigger("%testhub%", WebPubSubEventType.System, "testevent")]WebPubSubConnectionContext context)
         {
         }
     }

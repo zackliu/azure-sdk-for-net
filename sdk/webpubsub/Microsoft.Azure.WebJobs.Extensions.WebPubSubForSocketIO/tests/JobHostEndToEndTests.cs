@@ -91,7 +91,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         private sealed class WebPubSubFuncs
         {
             public static void TestWebPubSubTrigger(
-                [WebPubSubTrigger("chat", WebPubSubEventType.System, "connect")] ConnectEventRequest request,
+                [WebPubSubForSocketIOTrigger("chat", WebPubSubEventType.System, "connect")] ConnectEventRequest request,
                 WebPubSubConnectionContext connectionContext)
             {
                 // Valid case use default url for verification.
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
             }
 
             public static void TestWebPubSubTriggerInvalid(
-                [WebPubSubTrigger("chat", WebPubSubEventType.System, "connect")] int request)
+                [WebPubSubForSocketIOTrigger("chat", WebPubSubEventType.System, "connect")] int request)
             {
             }
 

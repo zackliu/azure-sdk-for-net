@@ -9,14 +9,14 @@ using Microsoft.Azure.WebJobs.Host.Triggers;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
-    internal class WebPubSubTriggerBindingProvider : ITriggerBindingProvider
+    internal class WebPubSubForSocketIOTriggerBindingProvider : ITriggerBindingProvider
     {
-        private readonly IWebPubSubTriggerDispatcher _dispatcher;
+        private readonly IWebPubSubForSocketIOTriggerDispatcher _dispatcher;
         private readonly INameResolver _nameResolver;
         private readonly WebPubSubFunctionsOptions _options;
         private readonly Exception _webhookException;
 
-        public WebPubSubTriggerBindingProvider(IWebPubSubTriggerDispatcher dispatcher, INameResolver nameResolver, WebPubSubFunctionsOptions options, Exception webhookException)
+        public WebPubSubForSocketIOTriggerBindingProvider(IWebPubSubForSocketIOTriggerDispatcher dispatcher, INameResolver nameResolver, WebPubSubFunctionsOptions options, Exception webhookException)
         {
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             _nameResolver = nameResolver ?? throw new ArgumentNullException(nameof(nameResolver));
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
             }
 
             var parameterInfo = context.Parameter;
-            var attribute = parameterInfo.GetCustomAttribute<WebPubSubTriggerAttribute>(false);
+            var attribute = parameterInfo.GetCustomAttribute<WebPubSubForSocketIOTriggerAttribute>(false);
             if (attribute == null)
             {
                 return Task.FromResult<ITriggerBinding>(null);
@@ -43,10 +43,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                 throw new NotSupportedException($"WebPubSubTrigger is disabled due to 'AzureWebJobsStorage' connection string is not set or invalid. {_webhookException}");
             }
 
-            return Task.FromResult<ITriggerBinding>(new WebPubSubTriggerBinding(parameterInfo, GetResolvedAttribute(attribute), _options, _dispatcher));
+            return Task.FromResult<ITriggerBinding>(new WebPubSubForSocketIOTriggerBinding(parameterInfo, GetResolvedAttribute(attribute), _options, _dispatcher));
         }
 
-        internal WebPubSubTriggerAttribute GetResolvedAttribute(WebPubSubTriggerAttribute attribute)
+        internal WebPubSubForSocketIOTriggerAttribute GetResolvedAttribute(WebPubSubForSocketIOTriggerAttribute attribute)
         {
             // Try resolve and throw exception if not able to find one.
             if (!_nameResolver.TryResolveWholeString(attribute.Hub, out var hub))
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                 throw new ArgumentException($"Failed to resolve substitute configure: {attribute.EventName}, please add.");
             }
 
-            return new WebPubSubTriggerAttribute(
+            return new WebPubSubForSocketIOTriggerAttribute(
                 hub,
                 attribute.EventType,
                 eventName,

@@ -10,16 +10,16 @@ using Microsoft.Azure.WebJobs.Host.Listeners;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
-    internal class WebPubSubListener : IListener
+    internal class WebPubSubForSocketIOListener : IListener
     {
         public ITriggeredFunctionExecutor Executor { get; private set; }
 
         public WebPubSubValidationOptions ValidationOptions { get; }
 
         private readonly string _listenerKey;
-        private readonly IWebPubSubTriggerDispatcher _dispatcher;
+        private readonly IWebPubSubForSocketIOTriggerDispatcher _dispatcher;
 
-        public WebPubSubListener(ITriggeredFunctionExecutor executor, string listenerKey, IWebPubSubTriggerDispatcher dispatcher, WebPubSubValidationOptions validationOptions)
+        public WebPubSubForSocketIOListener(ITriggeredFunctionExecutor executor, string listenerKey, IWebPubSubForSocketIOTriggerDispatcher dispatcher, WebPubSubValidationOptions validationOptions)
         {
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             _listenerKey = listenerKey ?? throw new ArgumentNullException(nameof(listenerKey));

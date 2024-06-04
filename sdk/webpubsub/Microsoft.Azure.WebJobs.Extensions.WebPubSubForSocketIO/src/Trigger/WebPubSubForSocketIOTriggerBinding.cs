@@ -17,14 +17,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
-    internal class WebPubSubTriggerBinding : ITriggerBinding
+    internal class WebPubSubForSocketIOTriggerBinding : ITriggerBinding
     {
         private readonly ParameterInfo _parameterInfo;
-        private readonly WebPubSubTriggerAttribute _attribute;
-        private readonly IWebPubSubTriggerDispatcher _dispatcher;
+        private readonly WebPubSubForSocketIOTriggerAttribute _attribute;
+        private readonly IWebPubSubForSocketIOTriggerDispatcher _dispatcher;
         private readonly WebPubSubFunctionsOptions _options;
 
-        public WebPubSubTriggerBinding(ParameterInfo parameterInfo, WebPubSubTriggerAttribute attribute, WebPubSubFunctionsOptions options, IWebPubSubTriggerDispatcher dispatcher)
+        public WebPubSubForSocketIOTriggerBinding(ParameterInfo parameterInfo, WebPubSubForSocketIOTriggerAttribute attribute, WebPubSubFunctionsOptions options, IWebPubSubForSocketIOTriggerDispatcher dispatcher)
         {
             _parameterInfo = parameterInfo ?? throw new ArgumentNullException(nameof(parameterInfo));
             _attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                 new WebPubSubValidationOptions(_attribute.Connections) :
                 new WebPubSubValidationOptions(_options.ConnectionString);
 
-            return Task.FromResult<IListener>(new WebPubSubListener(context.Executor, listernerKey, _dispatcher, validationOptions));
+            return Task.FromResult<IListener>(new WebPubSubForSocketIOListener(context.Executor, listernerKey, _dispatcher, validationOptions));
         }
 
         public ParameterDescriptor ToParameterDescriptor()

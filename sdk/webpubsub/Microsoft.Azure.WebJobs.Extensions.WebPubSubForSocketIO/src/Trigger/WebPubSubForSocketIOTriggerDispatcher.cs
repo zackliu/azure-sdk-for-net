@@ -17,9 +17,9 @@ using NewtonsoftJsonLinq = Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
-    internal class WebPubSubForSocketIOTriggerDispatcher : IWebPubSubTriggerDispatcher
+    internal class WebPubSubForSocketIOTriggerDispatcher : IWebPubSubForSocketIOTriggerDispatcher
     {
-        private readonly Dictionary<string, WebPubSubListener> _listeners = new(StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<string, WebPubSubForSocketIOListener> _listeners = new(StringComparer.InvariantCultureIgnoreCase);
         private readonly ILogger _logger;
         private readonly WebPubSubFunctionsOptions _options;
 
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
             _options = options;
         }
 
-        public void AddListener(string key, WebPubSubListener listener)
+        public void AddListener(string key, WebPubSubForSocketIOListener listener)
         {
             if (_listeners.ContainsKey(key))
             {

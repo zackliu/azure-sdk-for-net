@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
-    internal interface IWebPubSubTriggerDispatcher
+    internal interface IWebPubSubForSocketIOTriggerDispatcher
     {
-        void AddListener(string key, WebPubSubListener listener);
+        void AddListener(string key, WebPubSubForSocketIOListener listener);
 
         Task<HttpResponseMessage> ExecuteAsync(HttpRequestMessage req, CancellationToken token = default);
     }

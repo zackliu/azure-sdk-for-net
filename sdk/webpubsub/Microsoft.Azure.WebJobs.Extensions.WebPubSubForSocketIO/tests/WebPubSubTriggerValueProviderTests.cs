@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebPubSub.Common;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using static Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.WebPubSubTriggerBinding;
+using static Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.WebPubSubForSocketIOTriggerBinding;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 {
@@ -65,13 +65,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 
         private static class ValidTriggerBindings
         {
-            public static void Func1([WebPubSubTrigger("testchat", WebPubSubEventType.System, "connect")] WebPubSubConnectionContext connectionContext)
+            public static void Func1([WebPubSubForSocketIOTrigger("testchat", WebPubSubEventType.System, "connect")] WebPubSubConnectionContext connectionContext)
             { }
 
-            public static void Func2([WebPubSubTrigger("testchat", WebPubSubEventType.User, "message")] WebPubSubConnectionContext connectionContext, BinaryData data, WebPubSubDataType dataType)
+            public static void Func2([WebPubSubForSocketIOTrigger("testchat", WebPubSubEventType.User, "message")] WebPubSubConnectionContext connectionContext, BinaryData data, WebPubSubDataType dataType)
             { }
 
-            public static void Func3([WebPubSubTrigger("testchat", WebPubSubEventType.System, "connect")] JObject connectionContext)
+            public static void Func3([WebPubSubForSocketIOTrigger("testchat", WebPubSubEventType.System, "connect")] JObject connectionContext)
             { }
 
             public static IEnumerable<ParameterInfo[]> GetParameters()
@@ -91,10 +91,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
 
         private static class InvalidTriggerBindings
         {
-            public static void Func1([WebPubSubTrigger("testchat", WebPubSubEventType.System, "connect")] string[] connectionContext)
+            public static void Func1([WebPubSubForSocketIOTrigger("testchat", WebPubSubEventType.System, "connect")] string[] connectionContext)
             { }
 
-            public static void Func2([WebPubSubTrigger("testchat", WebPubSubEventType.User, "message")] int connectionContext)
+            public static void Func2([WebPubSubForSocketIOTrigger("testchat", WebPubSubEventType.User, "message")] int connectionContext)
             { }
 
             public static IEnumerable<ParameterInfo[]> GetParameters()

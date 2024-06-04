@@ -134,7 +134,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
             var executor = new Mock<ITriggeredFunctionExecutor>();
             executor.Setup(f => f.TryExecuteAsync(It.IsAny<TriggeredFunctionData>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(new FunctionResult(true)));
-            var listener = new WebPubSubListener(executor.Object, funcName, dispatcher, new WebPubSubValidationOptions(connectionString));
+            var listener = new WebPubSubForSocketIOListener(executor.Object, funcName, dispatcher, new WebPubSubValidationOptions(connectionString));
 
             dispatcher.AddListener(funcName, listener);
 

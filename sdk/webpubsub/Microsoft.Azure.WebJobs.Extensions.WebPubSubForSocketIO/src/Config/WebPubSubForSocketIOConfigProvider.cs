@@ -26,7 +26,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         private readonly INameResolver _nameResolver;
         private readonly ILogger _logger;
         private readonly WebPubSubFunctionsOptions _options;
-        private readonly IWebPubSubTriggerDispatcher _dispatcher;
+        private readonly IWebPubSubForSocketIOTriggerDispatcher _dispatcher;
         private readonly SocketLifetimeStore _socketLifetimeStore;
 
         public WebPubSubForSocketIOConfigProvider(
@@ -85,8 +85,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                 .AddConverter<JArray, WebPubSubForSocketIOAction[]>(ConvertToWebPubSubOperationArray);
 
             // Trigger binding
-            context.AddBindingRule<WebPubSubTriggerAttribute>()
-                .BindToTrigger(new WebPubSubTriggerBindingProvider(_dispatcher, _nameResolver, _options, webhookException));
+            context.AddBindingRule<WebPubSubForSocketIOTriggerAttribute>()
+                .BindToTrigger(new WebPubSubForSocketIOTriggerBindingProvider(_dispatcher, _nameResolver, _options, webhookException));
 
             // Input binding -- For negotiation token
             var webpubsubConnectionAttributeRule = context.AddBindingRule<WebPubSubConnectionAttribute>();
