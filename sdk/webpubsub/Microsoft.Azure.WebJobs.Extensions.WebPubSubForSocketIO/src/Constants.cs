@@ -9,7 +9,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         public const string AllowedAllOrigins = "*";
 
         // WebPubSubOptions can be set by customers.
-        public const string WebPubSubConnectionStringName = "WebPubSubForSocketIOConnectionString";
+        public const string SocketIOConnectionStringName = "WebPubSubForSocketIOConnectionString";
         public const string HubNameStringName = "WebPubSubForSocketIOHub";
         public const string WebPubSubValidationStringName = "WebPubSubValidation";
 

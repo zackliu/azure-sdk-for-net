@@ -10,7 +10,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.BaseActions
     /// Operation to add connectionId to a group.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class AddConnectionToGroupAction : WebPubSubAction
+    internal class AddConnectionToGroupAction : WebPubSubAction
     {
         /// <summary>
         /// Target connectionId.

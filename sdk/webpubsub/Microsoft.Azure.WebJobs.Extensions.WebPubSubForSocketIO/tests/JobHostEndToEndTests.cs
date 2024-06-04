@@ -18,7 +18,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         private static readonly BinaryData TestMessage = BinaryData.FromString("JobHostEndToEndTests");
         private static readonly Dictionary<string, string> FuncConfiguration = new()
         {
-            { Constants.WebPubSubConnectionStringName, "Endpoint=https://abc;AccessKey=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGH;Version=1.0;" }
+            { Constants.SocketIOConnectionStringName, "Endpoint=https://abc;AccessKey=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGH;Version=1.0;" }
         };
 
         [TestCase]
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
             {
                 await operation.AddAsync(new SendToNamespaceAction
                 {
-                    Data = new[] { "arg1" },
+                    Arguments = new[] { "arg1" },
                     Namespace = "/",
                 });
             }
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
             {
                 await operation.AddAsync(new SendToNamespaceAction
                 {
-                    Data = new[] { "arg1" },
+                    Arguments = new[] { "arg1" },
                     Namespace = "/",
                 });
             }

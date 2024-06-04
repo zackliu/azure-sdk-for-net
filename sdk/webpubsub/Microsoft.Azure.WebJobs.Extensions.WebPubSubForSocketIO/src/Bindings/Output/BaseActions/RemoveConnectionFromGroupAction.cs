@@ -10,7 +10,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.BaseActions
     /// Operation to remove a connection from group.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class RemoveConnectionFromGroupAction : WebPubSubAction
+    internal class RemoveConnectionFromGroupAction : WebPubSubAction
     {
         /// <summary>
         /// Target connectionId.

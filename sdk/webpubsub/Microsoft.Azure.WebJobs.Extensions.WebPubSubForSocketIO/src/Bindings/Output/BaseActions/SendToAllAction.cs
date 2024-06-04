@@ -13,7 +13,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.BaseActions
     /// Operation to send message to all.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class SendToAllAction : WebPubSubAction
+    internal class SendToAllAction : WebPubSubAction
     {
         /// <summary>
         /// Message to broadcast.

@@ -10,7 +10,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.BaseActions
     /// Operation to close a connection.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class CloseClientConnectionAction : WebPubSubAction
+    internal class CloseClientConnectionAction : WebPubSubAction
     {
         /// <summary>
         /// Target connectionId.

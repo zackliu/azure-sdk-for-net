@@ -26,8 +26,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         public IList<string> Rooms { get; set; } = new List<string>();
 
         /// <summary>
-        /// Message to send.
+        /// The event name.
         /// </summary>
-        public IList<object> Data { get; set; }
+        public string EventName { get; set; }
+
+        /// <summary>
+        /// Message arguments.
+        /// </summary>
+        public IList<object> Arguments { get; set; }
     }
 }

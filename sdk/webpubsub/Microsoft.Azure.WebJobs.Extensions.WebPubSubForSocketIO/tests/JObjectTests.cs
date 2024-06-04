@@ -60,28 +60,30 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         [TestCase]
         public void TestSendToNamespace_Valid()
         {
-            var input = @"{ actionName : ""sendToNamespace"", data: [""data1"", ""data2""]}";
+            var input = @"{ actionName : ""sendToNamespace"", eventName: ""event"", arguments: [""data1"", ""data2""]}";
             var converted = (SendToNamespaceAction)WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(JObject.Parse(input));
 
-            Assert.AreEqual("data1", converted.Data[0]);
-            Assert.AreEqual("data2", converted.Data[1]);
+            Assert.AreEqual("event", converted.EventName);
+            Assert.AreEqual("data1", converted.Arguments[0]);
+            Assert.AreEqual("data2", converted.Arguments[1]);
         }
 
         [TestCase]
         public void TestSendToNamespace_ValidComplexData()
         {
-            var input = @"{ actionName : ""sendToNamespace"", data: [1, ""2"", {""a"":true}]}";
+            var input = @"{ actionName : ""sendToNamespace"",  eventName: ""event"", arguments: [1, ""2"", {""a"":true}]}";
             var converted = (SendToNamespaceAction)WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(JObject.Parse(input));
 
-            Assert.AreEqual(1, converted.Data[0]);
-            Assert.AreEqual("2", converted.Data[1]);
-            Assert.AreEqual(true, (bool)((JObject)converted.Data[2])["a"]);
+            Assert.AreEqual("event", converted.EventName);
+            Assert.AreEqual(1, converted.Arguments[0]);
+            Assert.AreEqual("2", converted.Arguments[1]);
+            Assert.AreEqual(true, (bool)((JObject)converted.Arguments[2])["a"]);
         }
 
         [TestCase]
         public void TestSendToNamespace_InvalidData()
         {
-            var input = @"{ actionName : ""sendToNamespace"", dataType: ""text"", data: 2}";
+            var input = @"{ actionName : ""sendToNamespace"",  eventName: ""event"", arguments: 2}";
             var jObject = JObject.Parse(input);
 
             Assert.Throws<ArgumentException>(() => WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(jObject));
@@ -90,20 +92,21 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         [TestCase]
         public void TestSendToRooms_Valid()
         {
-            var input = @"{ actionName : ""sendToRooms"", rooms: [""rma"", ""rmb""], data: [1, ""2"", {""a"":true}]}";
+            var input = @"{ actionName : ""sendToRooms"", rooms: [""rma"", ""rmb""], eventName: ""event"", arguments: [1, ""2"", {""a"":true}]}";
             var converted = (SendToRoomsAction)WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(JObject.Parse(input));
 
+            Assert.AreEqual("event", converted.EventName);
             Assert.AreEqual("rma", converted.Rooms[0]);
             Assert.AreEqual("rmb", converted.Rooms[1]);
-            Assert.AreEqual(1, converted.Data[0]);
-            Assert.AreEqual("2", converted.Data[1]);
-            Assert.AreEqual(true, (bool)((JObject)converted.Data[2])["a"]);
+            Assert.AreEqual(1, converted.Arguments[0]);
+            Assert.AreEqual("2", converted.Arguments[1]);
+            Assert.AreEqual(true, (bool)((JObject)converted.Arguments[2])["a"]);
         }
 
         [TestCase]
         public void TestSendToRooms_InvalidRoom()
         {
-            var input = @"{ actionName : ""sendToRooms"", rooms: ""abc"", data: [""data1"", ""data2""]}";
+            var input = @"{ actionName : ""sendToRooms"", rooms: ""abc"", eventName: ""event"", arguments: [""data1"", ""data2""]}";
             var jObject = JObject.Parse(input);
             Assert.Throws<ArgumentException>(() => WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(jObject));
         }
@@ -111,12 +114,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         [TestCase]
         public void TestSendToSocket_Valid()
         {
-            var input = @"{ actionName : ""sendToSocket"", socketId: ""sid"" ,data: [""data1"", ""data2""]}";
+            var input = @"{ actionName : ""sendToSocket"", socketId: ""sid"", eventName: ""event"", arguments: [""data1"", ""data2""]}";
             var converted = (SendToSocketAction)WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(JObject.Parse(input));
 
+            Assert.AreEqual("event", converted.EventName);
             Assert.AreEqual("sid", converted.SocketId);
-            Assert.AreEqual("data1", converted.Data[0]);
-            Assert.AreEqual("data2", converted.Data[1]);
+            Assert.AreEqual("data1", converted.Arguments[0]);
+            Assert.AreEqual("data2", converted.Arguments[1]);
         }
 
         [TestCase]

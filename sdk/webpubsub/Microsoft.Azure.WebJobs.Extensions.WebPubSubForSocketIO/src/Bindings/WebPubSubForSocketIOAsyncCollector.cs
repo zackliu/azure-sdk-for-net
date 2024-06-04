@@ -75,9 +75,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                     }
                 case SendToNamespaceAction sendToNamespace:
                     {
+                        var dataList = GetData(sendToNamespace.EventName, sendToNamespace.Arguments);
                         var data = EngineIOProtocol.EncodePacket(new SocketIOPacket(SocketIOPacketType.Event,
                             sendToNamespace.Namespace,
-                            JsonConvert.SerializeObject(sendToNamespace.Data)));
+                            JsonConvert.SerializeObject(dataList)));
                         await SendToService(new SendToGroupAction
                         {
                             Data = BinaryData.FromBytes(data),
@@ -93,9 +94,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                             throw new ArgumentException("Rooms cannot be empty.");
                         }
 
+                        var dataList = GetData(sendToRoom.EventName, sendToRoom.Arguments);
                         var data = EngineIOProtocol.EncodePacket(new SocketIOPacket(SocketIOPacketType.Event,
                             sendToRoom.Namespace,
-                            JsonConvert.SerializeObject(sendToRoom.Data)));
+                            JsonConvert.SerializeObject(dataList)));
 
                         if (sendToRoom.Rooms.Count == 1)
                         {
@@ -120,9 +122,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                     }
                 case SendToSocketAction sendToSocket:
                     {
+                        var dataList = GetData(sendToSocket.EventName, sendToSocket.Arguments);
                         var data = EngineIOProtocol.EncodePacket(new SocketIOPacket(SocketIOPacketType.Event,
                             sendToSocket.Namespace,
-                            JsonConvert.SerializeObject(sendToSocket.Data)));
+                            JsonConvert.SerializeObject(dataList)));
 
                         if (!_socketLifetimeStore.TryFindConnectionIdBySocketId(sendToSocket.SocketId, out var connId, out var @namespace))
                         {
@@ -211,6 +214,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                 filter += $" or '{Utilities.GetGroupNameByNamespaceRoom(@namespace, rooms[i])}' in groups";
             }
             return filter;
+        }
+
+        private IList<object> GetData(string eventName, IEnumerable<object> arguments)
+        {
+            var rst = new List<object> { eventName };
+            rst.AddRange(arguments);
+            return rst;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.BaseActions
     /// Operation to close connections in a group.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class CloseGroupConnectionsAction : WebPubSubAction
+    internal class CloseGroupConnectionsAction : WebPubSubAction
     {
         /// <summary>
         /// Target group name.

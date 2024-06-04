@@ -13,7 +13,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.BaseActions
     /// Operation to send message to a group.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class SendToGroupAction : WebPubSubAction
+    internal class SendToGroupAction : WebPubSubAction
     {
         /// <summary>
         /// Target group name.

@@ -15,7 +15,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.BaseActions
     /// Abstract class of operation to invoke service.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public abstract class WebPubSubAction
+    internal abstract class WebPubSubAction
     {
         internal string ActionName
         {

@@ -54,18 +54,18 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         [Test]
         public async Task SendToRoomTest()
         {
-            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToRoomsAction(new string[] {"abc"}, "/ns", new[] { "rm" }));
+            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToRoomsAction("/ns", new[] { "rm" }, "event", new string[] {"abc"}));
             _service.Verify(x => x.SendToGroupAsync("0~L25z~cm0", It.Is<RequestContent>(c =>
-            AssertContentData(c, "42/ns,[\"abc\"]")),
+            AssertContentData(c, "42/ns,[\"event\",\"abc\"]")),
             ContentType.TextPlain, It.IsAny<IList<string>>(), It.Is<RequestContext>(x => x.CancellationToken == default)), Times.Once);
         }
 
         [Test]
-        public async Task SendToRoomWithComplTest()
+        public async Task SendToRoomWithComplexTest()
         {
-            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToRoomsAction(new object[] { 1, "abc" , new { a=1, b=true } }, "/ns", new[] { "rm" }));
+            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToRoomsAction("/ns", new[] { "rm" }, "event", new object[] { 1, "abc" , new { a=1, b=true } }));
             _service.Verify(x => x.SendToGroupAsync("0~L25z~cm0", It.Is<RequestContent>(c =>
-            AssertContentData(c, "42/ns,[1,\"abc\",{\"a\":1,\"b\":true}]")),
+            AssertContentData(c, "42/ns,[\"event\",1,\"abc\",{\"a\":1,\"b\":true}]")),
             ContentType.TextPlain, It.IsAny<IList<string>>(), It.Is<RequestContext>(x => x.CancellationToken == default)), Times.Once);
         }
 
@@ -73,17 +73,17 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         public async Task SendToRoomCtsTest()
         {
             using var cts = new CancellationTokenSource(1000);
-            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToRoomsAction(new string[] { "abc" }, "/ns", new[] { "rm" }), cts.Token);
+            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToRoomsAction("/ns", new[] { "rm" }, "event", new string[] { "abc" }), cts.Token);
             _service.Verify(x => x.SendToGroupAsync("0~L25z~cm0", It.Is<RequestContent>(c =>
-            AssertContentData(c, "42/ns,[\"abc\"]")), ContentType.TextPlain, It.IsAny<IList<string>>(), It.Is<RequestContext>(x => x.CancellationToken == cts.Token)), Times.Once);
+            AssertContentData(c, "42/ns,[\"event\",\"abc\"]")), ContentType.TextPlain, It.IsAny<IList<string>>(), It.Is<RequestContext>(x => x.CancellationToken == cts.Token)), Times.Once);
         }
 
         [Test]
         public async Task SendToRoomsTest()
         {
-            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToRoomsAction(new string[] { "abc" }, "/ns", new[] { "rm", "rm2" }));
+            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToRoomsAction("/ns", new[] { "rm", "rm2" }, "ev", new string[] { "abc" }));
             _service.Verify(x => x.SendToAllAsync(It.Is<RequestContent>(c =>
-            AssertContentData(c, "42/ns,[\"abc\"]")),
+            AssertContentData(c, "42/ns,[\"ev\",\"abc\"]")),
             ContentType.TextPlain, It.IsAny<IList<string>>(), It.Is<string>(f => f == "'0~L25z~cm0' in groups or '0~L25z~cm0y' in groups"), It.Is<RequestContext>(x => x.CancellationToken == default)), Times.Once);
         }
 
@@ -92,27 +92,27 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         {
             // Simulate the socket is in local
             _socketLifetimeStore.AddSocket("socket1", "/ns", "conn1");
-            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToSocketAction(new string[] { "abc" }, "/ns", "socket1"));
+            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToSocketAction("/ns", "socket1", "event", new string[] { "abc" }));
             _service.Verify(x => x.SendToConnectionAsync("conn1", It.Is<RequestContent>(c =>
-            AssertContentData(c, "42/ns,[\"abc\"]")),
+            AssertContentData(c, "42/ns,[\"event\",\"abc\"]")),
             ContentType.TextPlain, It.Is<RequestContext>(x => x.CancellationToken == default)), Times.Once);
         }
 
         [Test]
         public async Task SendToGlobalSocketTest()
         {
-            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToSocketAction(new string[] { "abc" }, "/ns", "socket1"));
+            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToSocketAction("/ns", "socket1", "event", new string[] { "abc" }));
             _service.Verify(x => x.SendToGroupAsync("0~L25z~c29ja2V0MQ", It.Is<RequestContent>(c =>
-            AssertContentData(c, "42/ns,[\"abc\"]")),
+            AssertContentData(c, "42/ns,[\"event\",\"abc\"]")),
             ContentType.TextPlain, It.IsAny<IList<string>>(), It.Is<RequestContext>(x => x.CancellationToken == default)), Times.Once);
         }
 
         [Test]
         public async Task SendToNamespaceTest()
         {
-            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToNamespaceAction(new string[] { "abc" }, "/ns"));
+            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToNamespaceAction("/ns", "event", new string[] { "abc" }));
             _service.Verify(x => x.SendToGroupAsync("0~L25z~", It.Is<RequestContent>(c =>
-            AssertContentData(c, "42/ns,[\"abc\"]")),
+            AssertContentData(c, "42/ns,[\"event\",\"abc\"]")),
             ContentType.TextPlain, It.IsAny<IList<string>>(), It.Is<RequestContext>(x => x.CancellationToken == default)), Times.Once);
         }
 

@@ -12,7 +12,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.BaseActions
     /// Operation to send message to a connection.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class SendToConnectionAction : WebPubSubAction
+    internal class SendToConnectionAction : WebPubSubAction
     {
         /// <summary>
         /// Target ConnectionId.

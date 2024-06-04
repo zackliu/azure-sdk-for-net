@@ -18,7 +18,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// Target Web PubSub service connection string.
         /// </summary>
         [ConnectionString]
-        public string Connection { get; set; } = Constants.WebPubSubConnectionStringName;
+        public string Connection { get; set; } = Constants.SocketIOConnectionStringName;
 
         /// <summary>
         /// Target hub name.

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.BaseActions
     /// Operation to close all connections.
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public class CloseAllConnectionsAction : WebPubSubAction
+    internal class CloseAllConnectionsAction : WebPubSubAction
     {
         /// <summary>
         /// ConnectionIds to exclude.
