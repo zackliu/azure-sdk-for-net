@@ -60,70 +60,96 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         [TestCase]
         public void TestSendToNamespace_Valid()
         {
-            var input = @"{ actionName : ""sendToNamespaceAction"", data: [""data1"", ""data2""]}";
-
-            var converted = JObject.Parse(input).ToObject<SendToNamespaceAction>();
+            var input = @"{ actionName : ""sendToNamespace"", data: [""data1"", ""data2""]}";
+            var converted = (SendToNamespaceAction)WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(JObject.Parse(input));
 
             Assert.AreEqual("data1", converted.Data[0]);
             Assert.AreEqual("data2", converted.Data[1]);
         }
 
         [TestCase]
-        public void TestSendToNamespace_ValidNumberData()
+        public void TestSendToNamespace_ValidComplexData()
         {
-            var input = @"{ actionName : ""sendToNamespaceAction"", data: [1, 2]}";
-            //var p = JObject.FromObject(1);
-            var b = BinaryData.FromObjectAsJson(new {a = 1, v = "1" });
-            var a = BinaryData.FromObjectAsJson(1);
-            var a1 = BinaryData.FromObjectAsJson("1");
-
-            var e = b.ToString();
-
-            var converted = JObject.Parse(input).ToObject<SendToNamespaceAction>();
+            var input = @"{ actionName : ""sendToNamespace"", data: [1, ""2"", {""a"":true}]}";
+            var converted = (SendToNamespaceAction)WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(JObject.Parse(input));
 
             Assert.AreEqual(1, converted.Data[0]);
-            Assert.AreEqual(2, converted.Data[1]);
+            Assert.AreEqual("2", converted.Data[1]);
+            Assert.AreEqual(true, (bool)((JObject)converted.Data[2])["a"]);
         }
 
         [TestCase]
         public void TestSendToNamespace_InvalidData()
         {
-            var input = @"{ actionName : ""sendToAll"", dataType: ""text"", data: 2}";
+            var input = @"{ actionName : ""sendToNamespace"", dataType: ""text"", data: 2}";
             var jObject = JObject.Parse(input);
 
-            Assert.Throws<ArgumentException>(() => WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(jObject), "Message data should be string, please stringify object.");
+            Assert.Throws<ArgumentException>(() => WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(jObject));
         }
 
         [TestCase]
         public void TestSendToRooms_Valid()
         {
-            var input = @"{ actionName : ""sendToRoomsAction"", rooms: [""rma"", ""rmb""], data: [""data1"", ""data2""]}";
-
-            var converted = JObject.Parse(input).ToObject<SendToRoomsAction>();
+            var input = @"{ actionName : ""sendToRooms"", rooms: [""rma"", ""rmb""], data: [1, ""2"", {""a"":true}]}";
+            var converted = (SendToRoomsAction)WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(JObject.Parse(input));
 
             Assert.AreEqual("rma", converted.Rooms[0]);
             Assert.AreEqual("rmb", converted.Rooms[1]);
-            Assert.AreEqual("data1", converted.Data[0]);
-            Assert.AreEqual("data2", converted.Data[1]);
+            Assert.AreEqual(1, converted.Data[0]);
+            Assert.AreEqual("2", converted.Data[1]);
+            Assert.AreEqual(true, (bool)((JObject)converted.Data[2])["a"]);
         }
 
         [TestCase]
         public void TestSendToRooms_InvalidRoom()
         {
-            var input = @"{ actionName : ""sendToRoomsAction"", rooms: ""abc"", data: [""data1"", ""data2""]}";
-            Assert.Throws<ArgumentException>(() => JObject.Parse(input).ToObject<SendToRoomsAction>(), "Message data should be string, please stringify object.");
+            var input = @"{ actionName : ""sendToRooms"", rooms: ""abc"", data: [""data1"", ""data2""]}";
+            var jObject = JObject.Parse(input);
+            Assert.Throws<ArgumentException>(() => WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(jObject));
         }
 
         [TestCase]
         public void TestSendToSocket_Valid()
         {
-            var input = @"{ actionName : ""sendToSocketAction"", socketId: ""sid"" ,data: [""data1"", ""data2""]}";
-
-            var converted = JObject.Parse(input).ToObject<SendToSocketAction>();
+            var input = @"{ actionName : ""sendToSocket"", socketId: ""sid"" ,data: [""data1"", ""data2""]}";
+            var converted = (SendToSocketAction)WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(JObject.Parse(input));
 
             Assert.AreEqual("sid", converted.SocketId);
             Assert.AreEqual("data1", converted.Data[0]);
             Assert.AreEqual("data2", converted.Data[1]);
+        }
+
+        [TestCase]
+        public void AddSocketToRoom_Valid()
+        {
+            var input = @"{ actionName : ""addSocketToRoom"", socketId: ""sid"", room: ""rm1"", namespace: ""ns""}";
+            var converted = (AddSocketToRoomAction)WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(JObject.Parse(input));
+
+            Assert.AreEqual("sid", converted.SocketId);
+            Assert.AreEqual("rm1", converted.Room);
+            Assert.AreEqual("ns", converted.Namespace);
+        }
+
+        [TestCase]
+        public void RemoveSocketFromRoom_Valid()
+        {
+            var input = @"{ actionName : ""removeSocketFromRoom"", socketId: ""sid"", room: ""rm1"", namespace: ""ns""}";
+            var converted = (RemoveSocketFromRoomAction)WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(JObject.Parse(input));
+
+            Assert.AreEqual("sid", converted.SocketId);
+            Assert.AreEqual("rm1", converted.Room);
+            Assert.AreEqual("ns", converted.Namespace);
+        }
+
+        [TestCase]
+        public void DisconnectSocket_Valid()
+        {
+            var input = @"{ actionName : ""disconnectSockets"", rooms: [ ""rm1"", ""rm2""], namespace: ""ns""}";
+            var converted = (DisconnectSocketsAction)WebPubSubForSocketIOConfigProvider.ConvertToWebPubSubOperation(JObject.Parse(input));
+
+            Assert.AreEqual("ns", converted.Namespace);
+            Assert.AreEqual("rm1", converted.Rooms[0]);
+            Assert.AreEqual("rm2", converted.Rooms[1]);
         }
     }
 }

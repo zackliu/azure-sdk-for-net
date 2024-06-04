@@ -79,7 +79,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <param name="data">SocketIO data.</param>
         /// <param name="namespace">Target namespace</param>
         /// <returns>An instance of <see cref="SendToNamespaceAction"></see>.</returns>
-        public static SendToNamespaceAction CreateSendToNamespaceAction(IEnumerable<string> data, string @namespace)
+        public static SendToNamespaceAction CreateSendToNamespaceAction(IEnumerable<object> data, string @namespace)
         {
             return new SendToNamespaceAction
             {
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <param name="namespace">Target namespace</param>
         /// <param name="rooms">Target rooms</param>
         /// <returns>An instance of <see cref="SendToNamespaceAction"></see>.</returns>
-        public static SendToRoomsAction CreateSendToRoomsAction(IEnumerable<string> data, string @namespace, IEnumerable<string> rooms)
+        public static SendToRoomsAction CreateSendToRoomsAction(IEnumerable<object> data, string @namespace, IEnumerable<string> rooms)
         {
             return new SendToRoomsAction
             {
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <param name="socketId">Target socket</param>
         /// <param name="namespace">Target namespace</param>
         /// <returns>An instance of <see cref="SendToSocketAction"></see>.</returns>
-        public static SendToSocketAction CreateSendToSocketAction(IEnumerable<string> data, string @namespace, string socketId)
+        public static SendToSocketAction CreateSendToSocketAction(IEnumerable<object> data, string @namespace, string socketId)
         {
             return new SendToSocketAction
             {

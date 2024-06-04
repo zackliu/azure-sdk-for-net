@@ -61,6 +61,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
         }
 
         [Test]
+        public async Task SendToRoomWithComplTest()
+        {
+            await _collector.AddAsync(WebPubSubForSocketIOAction.CreateSendToRoomsAction(new object[] { 1, "abc" , new { a=1, b=true } }, "/ns", new[] { "rm" }));
+            _service.Verify(x => x.SendToGroupAsync("0~L25z~cm0", It.Is<RequestContent>(c =>
+            AssertContentData(c, "42/ns,[1,\"abc\",{\"a\":1,\"b\":true}]")),
+            ContentType.TextPlain, It.IsAny<IList<string>>(), It.Is<RequestContext>(x => x.CancellationToken == default)), Times.Once);
+        }
+
+        [Test]
         public async Task SendToRoomCtsTest()
         {
             using var cts = new CancellationTokenSource(1000);

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     /// <summary>
-    /// Operation to add socket to a room.
+    /// Disconnect sockets
     /// </summary>
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class DisconnectSocketsAction : WebPubSubForSocketIOAction

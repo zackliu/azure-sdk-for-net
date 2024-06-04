@@ -191,8 +191,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         {
             if (actionName.Equals(operationType.Name, StringComparison.OrdinalIgnoreCase))
             {
-                operation = input.ToObject(operationType) as WebPubSubForSocketIOAction;
-                return true;
+                try
+                {
+                    operation = input.ToObject(operationType) as WebPubSubForSocketIOAction;
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    throw new ArgumentException($"Failed to convert to {operationType.Name}.", ex);
+                }
             }
             operation = null;
             return false;

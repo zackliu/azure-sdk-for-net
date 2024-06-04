@@ -27,6 +27,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         /// <summary>
         /// Message to send.
         /// </summary>
-        public IList<string> Data { get; set; }
+        public IList<object> Data { get; set; }
     }
 }

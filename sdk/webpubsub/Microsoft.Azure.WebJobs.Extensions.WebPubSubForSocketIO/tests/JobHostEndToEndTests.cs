@@ -107,7 +107,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
                 [WebPubSubConnection(Hub = "chat")] SocketIONegotiateResult connection)
             {
                 // Valid case use default url for verification.
-                Assert.AreEqual("wss://abc/client/hubs/chat", connection.Endpoint.AbsoluteUri);
+                Assert.AreEqual("wss://abc/", connection.Endpoint.AbsoluteUri);
             }
 
             public static async Task TestWebPubSubOutput(
