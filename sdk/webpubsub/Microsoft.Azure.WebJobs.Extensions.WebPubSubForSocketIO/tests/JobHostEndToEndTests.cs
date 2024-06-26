@@ -72,9 +72,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
             await host.GetJobHost().CallAsync("WebPubSubFuncs.TestWebPubSubOutput");
         }
 
-        private static WebPubSubTriggerEvent CreateTestTriggerEvent()
+        private static SocketIOTriggerEvent CreateTestTriggerEvent()
         {
-            return new WebPubSubTriggerEvent
+            return new SocketIOTriggerEvent
             {
                 ConnectionContext = TestContext,
                 Data = TestMessage,

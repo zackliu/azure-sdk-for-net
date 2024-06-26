@@ -19,7 +19,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     internal class WebPubSubForSocketIOTriggerDispatcher : IWebPubSubForSocketIOTriggerDispatcher
     {
-        private readonly Dictionary<string, WebPubSubForSocketIOListener> _listeners = new(StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<SocketIOTriggerKey, WebPubSubForSocketIOListener> _listeners = new();
         private readonly ILogger _logger;
         private readonly WebPubSubFunctionsOptions _options;
 
@@ -29,11 +29,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
             _options = options;
         }
 
-        public void AddListener(string key, WebPubSubForSocketIOListener listener)
+        public void AddListener(SocketIOTriggerKey key, WebPubSubForSocketIOListener listener)
         {
             if (_listeners.ContainsKey(key))
             {
-                throw new ArgumentException($"Duplicated binding attribute find: {string.Join(",", key.Split('.'))}");
+                throw new ArgumentException($"Duplicated binding attribute find: {key.ToString()}");
             }
             _listeners.Add(key, listener);
         }
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var function = GetFunctionName(context);
+            var function = GetFunctionTriggerKey(context);
 
             if (_listeners.TryGetValue(function, out var executor))
             {
@@ -72,7 +72,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                 WebPubSubDataType dataType = WebPubSubDataType.Text;
                 IDictionary<string, string[]> claims = null;
                 IDictionary<string, string[]> query = null;
-                IList<string> subprotocols = null;
                 IList<WebPubSubClientCertificate> certificates = null;
                 string reason = null;
                 WebPubSubEventRequest eventRequest = null;
@@ -85,6 +84,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                             var content = await req.Content.ReadAsStringAsync().ConfigureAwait(false);
                             var request = JsonSerializer.Deserialize<ConnectEventRequest>(content);
                             eventRequest = new ConnectEventRequest(context, request.Claims, request.Query, request.Subprotocols, request.ClientCertificates, request.Headers);
+                            break;
+                        }
+                    case RequestType.Connected:
+                        {
+                            eventRequest = new ConnectedEventRequest(context);
                             break;
                         }
                     case RequestType.Disconnected:
@@ -109,27 +113,23 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                             eventRequest = new UserEventRequest(context, data, dataType);
                             break;
                         }
-                    case RequestType.Connected:
-                        {
-                            eventRequest = new ConnectedEventRequest(context);
-                            break;
-                        }
                     default:
                         break;
                 }
 
-                var triggerEvent = new WebPubSubTriggerEvent
+                var triggerEvent = new SocketIOTriggerEvent
                 {
                     ConnectionContext = context,
                     Data = data,
                     DataType = dataType,
                     Claims = claims,
                     Query = query,
-                    Subprotocols = subprotocols,
                     ClientCertificates = certificates,
                     Reason = reason,
                     Request = eventRequest,
-                    TaskCompletionSource = tcs
+                    TaskCompletionSource = tcs,
+                    Namespace = context.Namespace,
+                    SocketId = context.SocketId,
                 };
                 await executor.Executor.TryExecuteAsync(new TriggeredFunctionData
                 {
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                 }, token).ConfigureAwait(false);
 
                 // After function processed, return on-hold event reponses.
-                if (requestType == RequestType.Connect || requestType == RequestType.User)
+                if (requestType == RequestType.Connect)
                 {
                     try
                     {
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
             return new HttpResponseMessage(HttpStatusCode.NotFound);
         }
 
-        private static bool TryParseCloudEvents(HttpRequestMessage request, out WebPubSubConnectionContext context)
+        private static bool TryParseCloudEvents(HttpRequestMessage request, out SocketIOSocketContext context)
         {
             try
             {
@@ -190,19 +190,18 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                 {
                     signature = string.Join(",", val);
                 }
-                string userId = null;
-                // UserId is optional, e.g. connect
-                if (request.Headers.TryGetValues(Constants.Headers.CloudEvents.UserId, out var values))
+                string @namespace = null;
+                if (request.Headers.TryGetValues(Constants.Headers.CloudEvents.Namespace, out var ns))
                 {
-                    userId = values.SingleOrDefault();
+                    @namespace = ns.First();
                 }
-                Dictionary<string, BinaryData> states = null;
-                if (request.Headers.TryGetValues(Constants.Headers.CloudEvents.State, out var connectionStates))
+                string socketId = null;
+                if (request.Headers.TryGetValues(Constants.Headers.CloudEvents.SocketId, out var sid))
                 {
-                    states = connectionStates.SingleOrDefault().DecodeConnectionStates();
+                    socketId = sid.First();
                 }
 
-                context = new WebPubSubConnectionContext(eventType, eventName, hub, connectionId, userId, signature, origin, states, headers);
+                context = new SocketIOSocketContext(eventType, eventName, hub, connectionId, @namespace, socketId, signature, origin, headers);
                 return true;
             }
             catch
@@ -212,9 +211,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
             }
         }
 
-        private static string GetFunctionName(WebPubSubConnectionContext context)
+        private static SocketIOTriggerKey GetFunctionTriggerKey(SocketIOSocketContext context)
         {
-            return $"{context.Hub}.{context.EventType}.{context.EventName}";
+            return new SocketIOTriggerKey(context.Hub, context.Namespace, context.EventType, context.EventName);
         }
 
         private static HttpResponseMessage RespondToServiceAbuseCheck(IList<string> requestHosts, WebPubSubValidationOptions options)

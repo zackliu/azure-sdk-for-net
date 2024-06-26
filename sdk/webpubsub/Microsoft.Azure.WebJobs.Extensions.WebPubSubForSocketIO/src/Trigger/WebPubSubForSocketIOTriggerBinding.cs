@@ -34,7 +34,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
             BindingDataContract = CreateBindingContract(parameterInfo);
         }
 
-        public Type TriggerValueType => typeof(WebPubSubTriggerEvent);
+        public Type TriggerValueType => typeof(SocketIOTriggerEvent);
 
         public IReadOnlyDictionary<string, Type> BindingDataContract { get; }
 
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         {
             var bindingData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
-            if (value is WebPubSubTriggerEvent triggerEvent)
+            if (value is SocketIOTriggerEvent triggerEvent)
             {
                 AddBindingData(bindingData, triggerEvent);
 
@@ -68,12 +68,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
             {
                 throw new ArgumentException("Hub name should be configured in either attribute or appsettings.");
             }
-            var attributeName = $"{hub}.{_attribute.EventType}.{_attribute.EventName}";
-            var listernerKey = attributeName;
+            var listernerKey = new SocketIOTriggerKey(hub, _attribute.Namespace, _attribute.EventType, _attribute.EventName);
 
-            var validationOptions = _attribute.Connections != null ?
-                new WebPubSubValidationOptions(_attribute.Connections) :
-                new WebPubSubValidationOptions(_options.ConnectionString);
+            var validationOptions = new WebPubSubValidationOptions(_options.ConnectionString);
 
             return Task.FromResult<IListener>(new WebPubSubForSocketIOListener(context.Executor, listernerKey, _dispatcher, validationOptions));
         }
@@ -86,7 +83,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
             };
         }
 
-        private static void AddBindingData(Dictionary<string, object> bindingData, WebPubSubTriggerEvent triggerEvent)
+        private static void AddBindingData(Dictionary<string, object> bindingData, SocketIOTriggerEvent triggerEvent)
         {
             bindingData.Add(nameof(triggerEvent.Request), triggerEvent.Request);
             bindingData.Add(nameof(triggerEvent.ConnectionContext), triggerEvent.ConnectionContext);
@@ -95,8 +92,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
             bindingData.Add(nameof(triggerEvent.Claims), triggerEvent.Claims);
             bindingData.Add(nameof(triggerEvent.Query), triggerEvent.Query);
             bindingData.Add(nameof(triggerEvent.Reason), triggerEvent.Reason);
-            bindingData.Add(nameof(triggerEvent.Subprotocols), triggerEvent.Subprotocols);
             bindingData.Add(nameof(triggerEvent.ClientCertificates), triggerEvent.ClientCertificates);
+            bindingData.Add(nameof(triggerEvent.SocketId), triggerEvent.SocketId);
+            bindingData.Add(nameof(triggerEvent.Namespace), triggerEvent.Namespace);
         }
 
         /// <summary>
@@ -119,6 +117,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
             SafeAddContract(() => contract.Add("Reason", typeof(string)));
             SafeAddContract(() => contract.Add("Subprotocols", typeof(string[])));
             SafeAddContract(() => contract.Add("ClientCertificates", typeof(WebPubSubClientCertificate[])));
+            SafeAddContract(() => contract.Add("SocketId", typeof(string)));
+            SafeAddContract(() => contract.Add("Namespace", typeof(string)));
 
             return contract;
         }
@@ -141,9 +141,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
         internal class WebPubSubTriggerValueProvider : IValueBinder
         {
             private readonly ParameterInfo _parameter;
-            private readonly WebPubSubTriggerEvent _triggerEvent;
+            private readonly SocketIOTriggerEvent _triggerEvent;
 
-            public WebPubSubTriggerValueProvider(ParameterInfo parameter, WebPubSubTriggerEvent triggerEvent)
+            public WebPubSubTriggerValueProvider(ParameterInfo parameter, SocketIOTriggerEvent triggerEvent)
             {
                 _parameter = parameter ?? throw new ArgumentNullException(nameof(parameter));
                 _triggerEvent = triggerEvent ?? throw new ArgumentNullException(nameof(triggerEvent));
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 
             private object GetValueByName(string parameterName, Type targetType)
             {
-                var property = Utilities.GetProperty(typeof(WebPubSubTriggerEvent), parameterName);
+                var property = Utilities.GetProperty(typeof(SocketIOTriggerEvent), parameterName);
                 if (property != null)
                 {
                     var value = property.GetValue(_triggerEvent);

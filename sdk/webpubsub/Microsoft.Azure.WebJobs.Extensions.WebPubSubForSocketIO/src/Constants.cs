@@ -45,6 +45,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                 public const string UserId = Prefix + "userId";
                 public const string State = Prefix + "connectionState";
                 public const string AwpsVersion = Prefix + "awpsversion";
+                public const string Namespace = Prefix + "namespace";
+                public const string SocketId = Prefix + "socketId";
 
                 public const string TypeSystemPrefix = "azure.webpubsub.sys.";
                 public const string TypeUserPrefix = "azure.webpubsub.user.";

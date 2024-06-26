@@ -9,7 +9,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
     internal interface IWebPubSubForSocketIOTriggerDispatcher
     {
-        void AddListener(string key, WebPubSubForSocketIOListener listener);
+        void AddListener(SocketIOTriggerKey key, WebPubSubForSocketIOListener listener);
 
         Task<HttpResponseMessage> ExecuteAsync(HttpRequestMessage req, CancellationToken token = default);
     }

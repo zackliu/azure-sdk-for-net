@@ -62,7 +62,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
                 hub,
                 attribute.EventType,
                 eventName,
-                attribute.Connections);
+                attribute.Namespace);
         }
     }
 }

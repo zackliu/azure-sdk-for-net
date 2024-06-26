@@ -4,22 +4,25 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Trigger.Model;
 using Microsoft.Azure.WebPubSub.Common;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 {
-    internal class WebPubSubTriggerEvent
+    internal class SocketIOTriggerEvent
     {
         /// <summary>
-        /// Web PubSub common request context from cloud event headers.
+        /// Socket request context from cloud event headers.
         /// </summary>
-        public WebPubSubConnectionContext ConnectionContext { get; set; }
+        public SocketIOSocketContext ConnectionContext { get; set; }
+
+        public string Namespace { get; set; }
+
+        public string SocketId { get; set; }
 
         public BinaryData Data { get; set; }
 
         public WebPubSubDataType DataType { get; set; }
-
-        public IList<string> Subprotocols { get; set; }
 
         public IDictionary<string, string[]> Claims { get; set; }
 
@@ -29,7 +32,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 
         public string Reason { get; set; }
 
-        public WebPubSubEventRequest Request { get; set; }
+        public SocketIOEventRequest Request { get; set; }
 
         /// <summary>
         /// A TaskCompletionSource will set result when the function invocation has finished.

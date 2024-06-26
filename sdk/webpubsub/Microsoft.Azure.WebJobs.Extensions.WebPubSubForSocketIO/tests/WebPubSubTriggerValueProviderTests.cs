@@ -120,9 +120,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Tests
             return methodInfo.GetParameters().First();
         }
 
-        private static WebPubSubTriggerEvent NewTestEvent()
+        private static SocketIOTriggerEvent NewTestEvent()
         {
-            return new WebPubSubTriggerEvent
+            return new SocketIOTriggerEvent
             {
                 ConnectionContext = new WebPubSubConnectionContext(WebPubSubEventType.User, "message", "testhub", "user1", "000000"),
                 Reason = "reason",

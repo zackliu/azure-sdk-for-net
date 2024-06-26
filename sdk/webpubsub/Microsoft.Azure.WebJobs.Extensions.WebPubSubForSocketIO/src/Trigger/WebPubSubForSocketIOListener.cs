@@ -16,13 +16,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO
 
         public WebPubSubValidationOptions ValidationOptions { get; }
 
-        private readonly string _listenerKey;
+        private readonly SocketIOTriggerKey _listenerKey;
         private readonly IWebPubSubForSocketIOTriggerDispatcher _dispatcher;
 
-        public WebPubSubForSocketIOListener(ITriggeredFunctionExecutor executor, string listenerKey, IWebPubSubForSocketIOTriggerDispatcher dispatcher, WebPubSubValidationOptions validationOptions)
+        public WebPubSubForSocketIOListener(ITriggeredFunctionExecutor executor, SocketIOTriggerKey listenerKey, IWebPubSubForSocketIOTriggerDispatcher dispatcher, WebPubSubValidationOptions validationOptions)
         {
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-            _listenerKey = listenerKey ?? throw new ArgumentNullException(nameof(listenerKey));
+            _listenerKey = listenerKey;
             Executor = executor ?? throw new ArgumentNullException(nameof(executor));
             ValidationOptions = validationOptions;
         }
