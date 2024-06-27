@@ -7,9 +7,15 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Trigger.Model
 {
-    internal class SocketIOEventRequest
+    /// <summary>
+    /// Base class for Socket.IO events
+    /// </summary>
+    [DataContract]
+    public abstract class SocketIOEventRequest
     {
         internal const string ConnectionContextProperty = "connectionContext";
+        internal const string NamespaceProperty = "namespace";
+        internal const string SocketIdProperty = "socketId";
 
         /// <summary>
         /// Connection context contains connection metadata following CloudEvents.
@@ -17,41 +23,29 @@ namespace Microsoft.Azure.WebJobs.Extensions.WebPubSubForSocketIO.Trigger.Model
         [DataMember(Name = ConnectionContextProperty)]
         [JsonPropertyName(ConnectionContextProperty)]
         public WebPubSubConnectionContext ConnectionContext { get; }
-    }
-
-    public class SocketIOConnectEventRequest : SocketIOEventRequest
-    {
-        internal const string ClaimsProperty = "claims";
-        internal const string QueryProperty = "query";
-        internal const string HeadersProperty = "headers";
-        internal const string ClientCertificatesProperty = "clientCertificates";
 
         /// <summary>
-        /// User Claims.
+        /// The namespace of socket
         /// </summary>
-        [JsonPropertyName(ClaimsProperty)]
-        [DataMember(Name = ClaimsProperty)]
-        public IReadOnlyDictionary<string, string[]> Claims { get; }
+        [DataMember(Name = NamespaceProperty)]
+        [JsonPropertyName(NamespaceProperty)]
+        public string Namespace { get; }
 
         /// <summary>
-        /// Request query.
+        /// The socket-id of socket
         /// </summary>
-        [JsonPropertyName(QueryProperty)]
-        [DataMember(Name = QueryProperty)]
-        public IReadOnlyDictionary<string, string[]> Query { get; }
+        [DataMember(Name = SocketIdProperty)]
+        [JsonPropertyName(SocketIdProperty)]
+        public string SocketId { get; }
 
         /// <summary>
-        /// Request headers.
+        /// Ctor of SocketIOEventRequest
         /// </summary>
-        [JsonPropertyName(HeadersProperty)]
-        [DataMember(Name = HeadersProperty)]
-        public IReadOnlyDictionary<string, string[]> Headers { get; }
-
-        /// <summary>
-        /// Client certificates.
-        /// </summary>
-        [JsonPropertyName(ClientCertificatesProperty)]
-        [DataMember(Name = ClientCertificatesProperty)]
-        public IReadOnlyList<WebPubSubClientCertificate> ClientCertificates { get; }
+        protected SocketIOEventRequest(WebPubSubConnectionContext connectionContext, string @namespace, string socketId)
+        {
+            ConnectionContext = connectionContext;
+            Namespace = @namespace;
+            SocketId = socketId;
+        }
     }
 }
